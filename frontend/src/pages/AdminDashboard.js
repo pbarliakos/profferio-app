@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import MenuItem from '@mui/material/MenuItem';
 
+
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
@@ -78,7 +79,7 @@ useEffect(() => {
     fetchUsers();
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/");
@@ -114,6 +115,7 @@ useEffect(() => {
       width: 150,
     },
   ];
+
 
   return (
     <Box p={4}>
@@ -212,6 +214,7 @@ useEffect(() => {
         onClose={() => setSnackbar("")}
       />
     </Box>
+
   );
 };
 
