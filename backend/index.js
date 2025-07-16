@@ -3,7 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth");
-
+const userRoutes = require("./routes/users");
 
 dotenv.config();
 
@@ -22,4 +22,8 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
-});
+})
+
+app.use("/api/users", userRoutes);
+
+;
