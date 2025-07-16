@@ -3,6 +3,8 @@ const router = express.Router();
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const { protect, isAdmin } = require("../middleware/authMiddleware");
+const Log = require("../models/Log");
+
 
 // GET: όλοι οι χρήστες
 router.get("/", protect, isAdmin, async (req, res) => {
@@ -34,6 +36,12 @@ router.post("/", protect, isAdmin, async (req, res) => {
     });
 
     await newUser.save();
+    await Log.create({
+  adminUsername: req.user.username,
+  action: "create",
+  targetUser: username,
+});
+
     res.status(201).json({ message: "User created" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -59,6 +67,12 @@ router.put("/:id", protect, isAdmin, async (req, res) => {
     }
 
     await user.save();
+    await Log.create({
+  adminUsername: req.user.username,
+  action: "update",
+  targetUser: username,
+});
+
     res.json({ message: "User updated" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -69,6 +83,12 @@ router.put("/:id", protect, isAdmin, async (req, res) => {
 router.delete("/:id", protect, isAdmin, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
+    await Log.create({
+  adminUsername: req.user.username,
+  action: "delete",
+  targetUser: req.params.id,
+});
+
     res.json({ message: "User deleted" });
   } catch (err) {
     res.status(500).json({ error: err.message });
