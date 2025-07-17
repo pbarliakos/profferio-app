@@ -21,9 +21,13 @@ import PeopleIcon from "@mui/icons-material/People";
 import GroupsIcon from "@mui/icons-material/Groups";
 import WorkspacesIcon from "@mui/icons-material/Workspaces";
 import Paper from "@mui/material/Paper";
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 
 
-const AdminDashboard = () => {
+
+const AdminDashboard = ({ darkMode, setDarkMode }) => {
+
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
   const [newUser, setNewUser] = useState({
@@ -39,7 +43,8 @@ const AdminDashboard = () => {
   const [snackbar, setSnackbar] = useState("");
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
-
+  const userInfo = JSON.parse(localStorage.getItem("user")) || {};
+  const {fullName,role} = userInfo;
 useEffect(() => {
   fetchUsers();
 }, []);
@@ -171,17 +176,33 @@ const handleExport = () => {
 
   return (
     <Box p={4}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4">Admin Dashboard</Typography>
-        <Button
-          variant="outlined"
-          startIcon={<Logout />}
-          color="error"
-          onClick={handleLogout}
-        >
-          Logout
-        </Button>
-      </Box>
+<Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+  <Typography variant="h4">Admin Dashboard</Typography>
+
+<Box display="flex" gap={2} alignItems="center">
+  <Box textAlign="right">
+    <Typography variant="caption" color="text.secondary">{fullName} | {role}</Typography>
+  </Box>
+
+  <Button
+    variant="outlined"
+    startIcon={darkMode ? <LightModeIcon /> : <DarkModeIcon />}
+    onClick={() => setDarkMode(!darkMode)}
+  >
+    {darkMode ? "Light" : "Dark"}
+  </Button>
+
+  <Button
+    variant="outlined"
+    startIcon={<Logout />}
+    color="error"
+    onClick={handleLogout}
+  >
+    Logout
+  </Button>
+</Box>
+
+</Box>
 
       <Box display="flex" gap={2} flexWrap="wrap" mb={4}>
   {/* Total Users */}
@@ -200,10 +221,10 @@ const handleExport = () => {
   >
     <PeopleIcon color="primary" sx={{ fontSize: 40 }} />
     <Box>
-      <Typography variant="subtitle2" color="text.secondary">
+      <Typography variant="subtitle2" color="#525252">
         Σύνολο Χρηστών
       </Typography>
-      <Typography variant="h5">{total}</Typography>
+      <Typography variant="h5" color="#000000">{total}</Typography>
     </Box>
   </Paper>
 
@@ -223,11 +244,11 @@ const handleExport = () => {
   >
     <WorkspacesIcon color="secondary" sx={{ fontSize: 40 }} />
     <Box>
-      <Typography variant="subtitle2" color="text.secondary">
+      <Typography variant="subtitle2" color="#525252">
         Χρήστες ανά Project
       </Typography>
       {Object.entries(projects).map(([key, val]) => (
-        <Typography key={key} variant="body2">
+        <Typography key={key} variant="body2" color="#000000">
           {key}: {val}
         </Typography>
       ))}
@@ -250,11 +271,11 @@ const handleExport = () => {
   >
     <GroupsIcon color="success" sx={{ fontSize: 40 }} />
     <Box>
-      <Typography variant="subtitle2" color="text.secondary">
+      <Typography variant="subtitle2" color="#525252">
         Χρήστες ανά Ρόλο
       </Typography>
       {Object.entries(roles).map(([key, val]) => (
-        <Typography key={key} variant="body2">
+        <Typography key={key} variant="body2" color="#000000">
           {key}: {val}
         </Typography>
       ))}

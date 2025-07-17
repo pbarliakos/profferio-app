@@ -3,7 +3,6 @@ const router = express.Router();
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const { protect, isAdmin } = require("../middleware/authMiddleware");
-const Log = require("../models/Log");
 
 
 // GET: όλοι οι χρήστες

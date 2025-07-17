@@ -12,7 +12,7 @@ exports.register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = new User({ username, email, password: hashedPassword, role, project });
+    const user = new User({ fullName, username, email, password: hashedPassword, role, project });
     await user.save();
 
     res.status(201).json({ message: "User registered successfully" });
@@ -38,14 +38,24 @@ exports.login = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.json({ token, user: { username: user.username, role: user.role, project: user.project } });
+    // ✅ Send token + fullName
+    res.json({
+      token,
+      user: {
+        username: user.username,
+        role: user.role,
+        project: user.project,
+        fullName: user.fullName,
+      },
+    });
+
+    // ✅ Log the login AFTER response (non-blocking, no await)
+    Log.create({
+      adminUsername: user.username,
+      action: "login",
+      targetUser: user.username,
+    }).catch(() => {});
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-  await Log.create({
-  adminUsername: user.username,
-  action: "login",
-  targetUser: user.username,
-});
-
 };
