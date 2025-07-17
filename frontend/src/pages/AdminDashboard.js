@@ -139,6 +139,34 @@ const getUserStats = () => {
 const { total, projects, roles } = getUserStats();
 
 
+const handleExport = () => {
+  if (!users.length) return;
+
+  const headers = ["Full Name", "Username", "Email", "Role", "Project"];
+  const rows = users.map(u => [
+    u.fullName,
+    u.username,
+    u.email,
+    u.role,
+    u.project
+  ]);
+
+  const csvContent = [
+    headers.join(","),
+    ...rows.map(r => r.map(field => `"${field}"`).join(","))
+  ].join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "users_export.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 
 
   return (
@@ -261,6 +289,13 @@ const { total, projects, roles } = getUserStats();
           sx={{ ml: 2, mt: 2, height: "55px" }}
         >
           Νεος Χρηστης
+        </Button>
+        <Button
+            variant="outlined"
+            onClick={handleExport}
+            sx={{ ml: 2, mt: 2, height: "55px" }}
+            >
+            Export Users
         </Button>
       </Box>
 
