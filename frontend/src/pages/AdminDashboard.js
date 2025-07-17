@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback  } from "react";
 import {
   Box,
   Button,
@@ -25,7 +25,6 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 
 
-
 const AdminDashboard = ({ darkMode, setDarkMode }) => {
 
   const [users, setUsers] = useState([]);
@@ -45,9 +44,16 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
   const userInfo = JSON.parse(localStorage.getItem("user")) || {};
   const {fullName,role} = userInfo;
+
 useEffect(() => {
+  const fetchUsers = async () => {
+    const res = await axios.get("/api/users", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setUsers(res.data);
+  };
   fetchUsers();
-}, []);
+}, [token]);
 
   const fetchUsers = async () => {
     const res = await axios.get("/api/users", {
