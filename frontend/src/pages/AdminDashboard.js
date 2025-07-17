@@ -17,6 +17,10 @@ import { Delete, Edit, Add, Logout } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import MenuItem from '@mui/material/MenuItem';
+import PeopleIcon from "@mui/icons-material/People";
+import GroupsIcon from "@mui/icons-material/Groups";
+import WorkspacesIcon from "@mui/icons-material/Workspaces";
+import Paper from "@mui/material/Paper";
 
 
 const AdminDashboard = () => {
@@ -116,6 +120,26 @@ useEffect(() => {
     },
   ];
 
+const getUserStats = () => {
+  const total = users.length;
+
+  const projects = users.reduce((acc, user) => {
+    acc[user.project] = (acc[user.project] || 0) + 1;
+    return acc;
+  }, {});
+
+  const roles = users.reduce((acc, user) => {
+    acc[user.role] = (acc[user.role] || 0) + 1;
+    return acc;
+  }, {});
+
+  return { total, projects, roles };
+};
+
+const { total, projects, roles } = getUserStats();
+
+
+
 
   return (
     <Box p={4}>
@@ -130,6 +154,86 @@ useEffect(() => {
           Logout
         </Button>
       </Box>
+
+      <Box display="flex" gap={2} flexWrap="wrap" mb={4}>
+  {/* Total Users */}
+  <Paper
+    sx={{
+      flex: 1,
+      minWidth: 220,
+      p: 3,
+      display: "flex",
+      alignItems: "center",
+      gap: 2,
+      bgcolor: "#e3f2fd",
+      borderRadius: 2,
+    }}
+    elevation={3}
+  >
+    <PeopleIcon color="primary" sx={{ fontSize: 40 }} />
+    <Box>
+      <Typography variant="subtitle2" color="text.secondary">
+        Σύνολο Χρηστών
+      </Typography>
+      <Typography variant="h5">{total}</Typography>
+    </Box>
+  </Paper>
+
+  {/* Users per Project */}
+  <Paper
+    sx={{
+      flex: 1,
+      minWidth: 220,
+      p: 3,
+      display: "flex",
+      alignItems: "center",
+      gap: 2,
+      bgcolor: "#f3e5f5",
+      borderRadius: 2,
+    }}
+    elevation={3}
+  >
+    <WorkspacesIcon color="secondary" sx={{ fontSize: 40 }} />
+    <Box>
+      <Typography variant="subtitle2" color="text.secondary">
+        Χρήστες ανά Project
+      </Typography>
+      {Object.entries(projects).map(([key, val]) => (
+        <Typography key={key} variant="body2">
+          {key}: {val}
+        </Typography>
+      ))}
+    </Box>
+  </Paper>
+
+  {/* Users per Role */}
+  <Paper
+    sx={{
+      flex: 1,
+      minWidth: 220,
+      p: 3,
+      display: "flex",
+      alignItems: "center",
+      gap: 2,
+      bgcolor: "#e8f5e9",
+      borderRadius: 2,
+    }}
+    elevation={3}
+  >
+    <GroupsIcon color="success" sx={{ fontSize: 40 }} />
+    <Box>
+      <Typography variant="subtitle2" color="text.secondary">
+        Χρήστες ανά Ρόλο
+      </Typography>
+      {Object.entries(roles).map(([key, val]) => (
+        <Typography key={key} variant="body2">
+          {key}: {val}
+        </Typography>
+      ))}
+    </Box>
+  </Paper>
+</Box>
+
 
       <Box display="flex" justifyContent="space-between" mb={2}>
         <TextField
