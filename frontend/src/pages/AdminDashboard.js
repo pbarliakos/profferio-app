@@ -23,6 +23,8 @@ import WorkspacesIcon from "@mui/icons-material/Workspaces";
 import Paper from "@mui/material/Paper";
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
+import Stack from "@mui/material/Stack";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 
 const AdminDashboard = ({ darkMode, setDarkMode }) => {
@@ -44,6 +46,12 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
   const userInfo = JSON.parse(localStorage.getItem("user")) || {};
   const {fullName,role} = userInfo;
+
+  const projectButtons = [
+  { label: "Alterlife", path: "/alterlife" },
+  { label: "Nova", path: "/nova" },
+  { label: "Other", path: "/other" },
+];
 
 useEffect(() => {
   const fetchUsers = async () => {
@@ -178,12 +186,25 @@ const handleExport = () => {
   document.body.removeChild(link);
 };
 
-
-
   return (
     <Box p={4}>
 <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
   <Typography variant="h4">Admin Dashboard</Typography>
+  {role === "admin" && (
+  <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 3 }}>
+    {projectButtons.map((btn) => (
+      <Button
+        key={btn.path}
+        variant="outlined"
+        size="medium"
+        endIcon={<OpenInNewIcon />}
+        onClick={() => window.open(btn.path, "_blank")}
+      >
+        {btn.label}
+      </Button>
+    ))}
+  </Stack>
+)}
 
 <Box display="flex" gap={2} alignItems="center">
   <Box textAlign="right">
