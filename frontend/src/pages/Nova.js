@@ -159,14 +159,6 @@ const handleExportCSV = async () => {
 };
 
 
-
-  const handleDarkModeToggle = () => {
-    const next = !darkMode;
-    setDarkMode(next);
-    localStorage.setItem("nova_dark", next.toString());
-  };
-
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
