@@ -8,6 +8,7 @@ import Other from "./pages/Other";
 import PrivateRoute from "./components/PrivateRoute";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Nova from "./pages/Nova";
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -45,6 +46,11 @@ function App() {
           {/* Alterlife */}
           <Route element={<ProtectedRoute allowedProject="alterlife" />}>
             <Route path="/alterlife" element={<Alterlife />} />
+          </Route>
+
+          {/* Nova Project */}
+          <Route element={<ProtectedRoute allowedProject="nova" />}>
+            <Route path="/nova" element={<Nova />} />
           </Route>
 
           {/* Other Project */}

@@ -35,7 +35,11 @@ const Login = () => {
         navigate("/admin");
       } else if (user.project === "alterlife") {
         navigate("/alterlife");
-      } else {
+      } 
+        else if (user.project === "nova") {
+       navigate("/nova");
+      }
+      else {
         navigate("/other");
       }
     } catch (err) {

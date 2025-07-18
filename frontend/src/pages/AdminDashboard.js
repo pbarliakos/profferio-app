@@ -364,6 +364,7 @@ const handleExport = () => {
         onChange={(e) => setNewUser({ ...newUser, project: e.target.value })}
         >
         <MenuItem value="alterlife">Alterlife</MenuItem>
+        <MenuItem value="nova">Nova</MenuItem>
         <MenuItem value="other">Other</MenuItem>
         </TextField>
         </DialogContent>
