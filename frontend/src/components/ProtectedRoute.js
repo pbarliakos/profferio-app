@@ -10,12 +10,17 @@ const ProtectedRoute = ({ allowedProject, allowedRole }) => {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
-  // Αν ο χρήστης έχει ρόλο admin και δεν του επιτρέπεται να δει admin
-  if (allowedRole === 'admin' && role !== 'admin') {
+  // ✅ Αν είναι admin, του επιτρέπεται παντού
+  if (role === 'admin') {
+    return <Outlet />;
+  }
+
+  // Αν υπάρχει περιορισμός ρόλου και δεν ταιριάζει
+  if (allowedRole && role !== allowedRole) {
     return <Navigate to="/" replace />;
   }
 
-  // Αν project δεν ταιριάζει
+  // Αν υπάρχει περιορισμός project και δεν ταιριάζει
   if (allowedProject && project !== allowedProject) {
     return <Navigate to="/" replace />;
   }
