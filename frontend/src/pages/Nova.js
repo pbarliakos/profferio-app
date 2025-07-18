@@ -29,6 +29,8 @@ import timezone from "dayjs/plugin/timezone";
 import "dayjs/locale/el";
 import { Logout } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 
 dayjs.locale("el");
 
@@ -177,10 +179,13 @@ const handleExportCSV = async () => {
       {user?.fullName} | {user?.role}
     </Typography>
 
-    <FormControlLabel
-      control={<Switch checked={darkMode} onChange={handleDarkModeToggle} />}
-      label="Dark"
-    />
+  <Button
+    variant="outlined"
+    startIcon={darkMode ? <LightModeIcon /> : <DarkModeIcon />}
+    onClick={() => setDarkMode(!darkMode)}
+  >
+    {darkMode ? "Light" : "Dark"}
+  </Button>
 
   <Button
     variant="outlined"
