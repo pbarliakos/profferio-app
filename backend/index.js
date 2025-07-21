@@ -15,7 +15,8 @@ app.use(cors({origin: "http://localhost:3000"}));
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api", emailRoutes);
-
+app.use("/api/login-logs", require("./routes/logs"));
+app.use("/api/auth", require("./routes/auth"));
 
 
 connectDB();

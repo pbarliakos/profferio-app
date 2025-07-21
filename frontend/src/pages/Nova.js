@@ -52,10 +52,24 @@ export default function Nova() {
   return savedUser ? JSON.parse(savedUser) : null;
 });
 
-const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  navigate("/");
+const handleLogout = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    if (token) {
+      await axios.post("/api/auth/logout", {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("✅ Logout recorded on server");
+    }
+  } catch (err) {
+    console.error("❌ Logout API failed", err);
+  } finally {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
+  }
 };
 
 

@@ -50,7 +50,8 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
   const projectButtons = [
   { label: "Alterlife", path: "/alterlife" },
   { label: "Nova", path: "/nova" },
-  { label: "Other", path: "/other" },
+  { label: "Agent Monitor", path: "/admin/AgentMonitor" },
+  { label: "Login Logs", path: "/admin/loginlogs"}
 ];
 
 useEffect(() => {
@@ -102,11 +103,25 @@ useEffect(() => {
     fetchUsers();
   };
 
-  const handleLogout = async () => {
+const handleLogout = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    if (token) {
+      await axios.post("/api/auth/logout", {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("✅ Logout recorded on server");
+    }
+  } catch (err) {
+    console.error("❌ Logout API failed", err);
+  } finally {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/");
-  };
+  }
+};
 
   const filteredUsers = users.filter((u) =>
     `${u.username} ${u.fullName} ${u.email}`.toLowerCase().includes(search.toLowerCase())
@@ -386,6 +401,7 @@ const handleExport = () => {
         >
         <MenuItem value="alterlife">Alterlife</MenuItem>
         <MenuItem value="nova">Nova</MenuItem>
+        <MenuItem value="admin">Admin</MenuItem>
         <MenuItem value="other">Other</MenuItem>
         </TextField>
         </DialogContent>

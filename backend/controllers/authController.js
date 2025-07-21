@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const LoginLog = require("../models/LoginLog");
 
 // Register
 exports.register = async (req, res) => {
@@ -37,6 +38,18 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ username });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
+    // 👉 Έλεγχος αν υπάρχει ήδη ενεργό session (loginLog χωρίς logoutAt)
+    const existingSession = await LoginLog.findOne({
+      userId: user._id,
+      logoutAt: { $exists: false }
+    });
+
+    if (existingSession) {
+      return res.status(403).json({
+        message: "Υπάρχει ήδη ενεργή συνεδρία για αυτό το όνομα χρήστη. Μόνο ένα session επιτρέπεται κάθε φορά."
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
@@ -47,8 +60,23 @@ exports.login = async (req, res) => {
         project: user.project,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "8h" }
     );
+
+    // 🐞 LOG εδώ:
+    console.log("✅ Login attempt for user:", user.username);
+
+    // 🐞 DEBUG τιμές που σπάνε συχνά:
+    console.log("project:", user.project);
+    console.log("fullName:", user.fullName);
+
+    await LoginLog.create({
+      userId: user._id,
+      username: user.username,
+      project: user.project,
+      fullName: user.fullName,
+      loginAt: new Date()
+    });
 
     res.json({
       token,
@@ -60,6 +88,7 @@ exports.login = async (req, res) => {
       },
     });
   } catch (err) {
+    console.error("❌ Login Error:", err);
     res.status(500).json({ error: err.message });
   }
 };

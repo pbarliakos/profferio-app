@@ -10,6 +10,20 @@ root.render(
   </React.StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+useEffect(() => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user) return;
+
+  const handleUnload = () => {
+    const data = JSON.stringify({ userId: user._id });
+    const blob = new Blob([data], { type: "application/json" });
+
+    navigator.sendBeacon("/api/auth/logout-beacon", blob);
+  };
+
+  window.addEventListener("beforeunload", handleUnload);
+
+  return () => {
+    window.removeEventListener("beforeunload", handleUnload);
+  };
+}, []);

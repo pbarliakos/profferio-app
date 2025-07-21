@@ -5,10 +5,13 @@ import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
 import Login from "./pages/Login";
 import Alterlife from "./pages/Alterlife";
 import Other from "./pages/Other";
-import PrivateRoute from "./components/PrivateRoute";
+//import PrivateRoute from "./components/PrivateRoute";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Nova from "./pages/Nova";
+import LoginLogs from "./pages/admin/LoginLogs";
+import AgentMonitor from "./pages/admin/AgentMonitor";
+
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -51,6 +54,16 @@ function App() {
           {/* Nova Project */}
           <Route element={<ProtectedRoute allowedProject="nova" />}>
             <Route path="/nova" element={<Nova />} />
+          </Route>
+
+          {/* Logins Logs */}
+          <Route element={<ProtectedRoute allowedProject="admin" />}>
+            <Route path="/admin/loginlogs" element={<LoginLogs />} />
+          </Route>
+
+          {/* Agent Monitor */}
+          <Route element={<ProtectedRoute allowedProject="admin" />}>
+            <Route path="/admin/AgentMonitor" element={<AgentMonitor />} />
           </Route>
 
           {/* Other Project */}
