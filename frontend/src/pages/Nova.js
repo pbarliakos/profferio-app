@@ -89,7 +89,7 @@ const fetchEmailHistory = async () => {
     if (startDate) params.startDate = dayjs(startDate).format("YYYY-MM-DD");
     if (endDate) params.endDate = dayjs(endDate).format("YYYY-MM-DD");
 
-    const res = await axios.get("http://localhost:5000/api/email-history", {
+    const res = await axios.get(`/api/email-history`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -119,8 +119,7 @@ useEffect(() => {
     }
 
     try {
-      await axios.post(
-        "http://localhost:5000/api/send-welcome-email",
+      await axios.post(`/api/send-welcome-email`,
         { email },
         {
           headers: {
@@ -139,7 +138,7 @@ useEffect(() => {
 
 const handleExportCSV = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/api/email-history/export", {
+    const res = await axios.get(`/api/email-history/export`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

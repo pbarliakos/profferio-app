@@ -17,6 +17,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api", emailRoutes);
 
 
+
 connectDB();
 
 
@@ -24,7 +25,7 @@ app.get("/", (req, res) => {
   res.send("Profferio backend is running");
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server started on port ${PORT}`);
 })
 
