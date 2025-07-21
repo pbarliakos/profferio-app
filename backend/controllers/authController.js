@@ -44,11 +44,11 @@ exports.login = async (req, res) => {
       logoutAt: { $exists: false }
     });
 
-    if (existingSession) {
-      return res.status(403).json({
-        message: "Υπάρχει ήδη ενεργή συνεδρία για αυτό το όνομα χρήστη. Μόνο ένα session επιτρέπεται κάθε φορά."
-      });
-    }
+if (existingSession && user.role !== "admin") {
+  return res.status(403).json({
+    message: "Υπάρχει ήδη ενεργή συνεδρία για αυτό το όνομα χρήστη. Μόνο ένα session επιτρέπεται κάθε φορά."
+  });
+}
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
@@ -75,12 +75,14 @@ exports.login = async (req, res) => {
       username: user.username,
       project: user.project,
       fullName: user.fullName,
-      loginAt: new Date()
+      loginAt: new Date(),
+      lastSeen: new Date()
     });
 
     res.json({
       token,
       user: {
+        _id: user._id,
         username: user.username,
         role: user.role,
         project: user.project,

@@ -7,6 +7,7 @@ const LoginLogSchema = new mongoose.Schema({
   fullName: String,
   loginAt: { type: Date, default: Date.now },
   logoutAt: Date,
+  lastSeen: Date,
   duration: Number // λεπτά
 });
 
