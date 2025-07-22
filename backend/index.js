@@ -17,8 +17,8 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     "http://profferio.othisisa.gr",
-    "http://profferio.othisisa.gr:3000",
-    "http://localhost:3000"
+    "http://profferio.othisisa.gr:3000"
+    //"http://localhost:3000"
   ]
 }));
 app.use(express.json());
