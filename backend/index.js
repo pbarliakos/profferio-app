@@ -18,7 +18,9 @@ app.use(cors({
   origin: [
     "http://profferio.othisisa.gr",
     "http://profferio.othisisa.gr:3000",
-    "https://profferio-frontend-staging.onrender.com"
+    "http://localhost:3000",
+    "https://profferio-frontend-staging.onrender.com",
+    "https://profferio-backend-staging.onrender.com"
   ],
   credentials: true,
 }));
