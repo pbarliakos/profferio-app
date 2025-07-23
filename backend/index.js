@@ -8,7 +8,6 @@ const emailRoutes = require("./routes/emailRoutes");
 const cron = require("node-cron");
 const axios = require("axios");
 
-
 dotenv.config();
 
 const app = express();
@@ -30,9 +29,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api", emailRoutes);
 app.use("/api/login-logs", require("./routes/logs"));
 
-
 connectDB();
-
 
 app.get("/", (req, res) => {
   res.send("Profferio backend is running");
@@ -40,17 +37,17 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server started on port ${PORT}`);
-})
+});
 
 app.use("/api/users", userRoutes);
 
-
+// ✅ Σωστό cron που καλεί πάντα τον τοπικό server
+const BASE_URL = `http://localhost:${PORT}`;
 cron.schedule("*/1 * * * * *", async () => {
   // κάθε 1 sec
   try {
-    const BACKEND_URL = process.env.BACKEND_URL;
-    axios.post(`${BACKEND_URL}/api/auth/force-close-inactive-sessions`);
-   // console.log("Checked and closed inactive sessions");
+    await axios.post(`${BASE_URL}/api/auth/force-close-inactive-sessions`);
+    // console.log("Checked and closed inactive sessions");
   } catch (err) {
     console.log("Cron error", err.message);
   }
