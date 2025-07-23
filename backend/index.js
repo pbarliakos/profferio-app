@@ -44,7 +44,8 @@ app.use("/api/users", userRoutes);
 cron.schedule("*/1 * * * * *", async () => {
   // κάθε 1 sec
   try {
-    await axios.post("http://profferio.othisisa.gr/api/auth/force-close-inactive-sessions");
+    const BASE_URL = process.env.BACKEND_URL;
+    axios.post(`${BASE_URL}/api/auth/force-close-inactive-sessions`);
    // console.log("Checked and closed inactive sessions");
   } catch (err) {
     console.log("Cron error", err.message);
