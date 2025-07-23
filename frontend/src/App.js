@@ -11,6 +11,7 @@ import Nova from "./pages/Nova";
 import LoginLogs from "./pages/admin/LoginLogs";
 import AgentMonitor from "./pages/admin/AgentMonitor";
 import axios from "axios";
+const API = process.env.REACT_APP_API_URL;
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);

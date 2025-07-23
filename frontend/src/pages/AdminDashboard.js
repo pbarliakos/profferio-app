@@ -26,6 +26,7 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import Stack from "@mui/material/Stack";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
+const API = process.env.REACT_APP_API_URL;
 
 const AdminDashboard = ({ darkMode, setDarkMode }) => {
 

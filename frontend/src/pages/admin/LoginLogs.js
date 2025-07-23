@@ -19,6 +19,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
 
+const API = process.env.REACT_APP_API_URL;
+
 
 const LoginLogs = () => {
   const [logs, setLogs] = useState([]);

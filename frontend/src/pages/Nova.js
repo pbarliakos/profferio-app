@@ -32,6 +32,8 @@ import { useNavigate } from "react-router-dom";
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 
+const API = process.env.REACT_APP_API_URL;
+
 dayjs.locale("el");
 
 dayjs.extend(utc);

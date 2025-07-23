@@ -16,6 +16,8 @@ import {
 import axios from "axios";
 import dayjs from "dayjs";
 
+const API = process.env.REACT_APP_API_URL;
+
 const AgentMonitor = () => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
