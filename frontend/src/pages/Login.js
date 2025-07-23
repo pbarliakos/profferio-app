@@ -19,36 +19,46 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Σημαντικό για να μη γίνει page reload
-
+    e.preventDefault();
+    setError("");
+  
+    // Clear old storage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("role");
+    localStorage.removeItem("project");
+  
     try {
       const res = await axios.post(`${API}/api/auth/login`, {
         username,
         password,
       });
-      
-
+  
       const { token, user } = res.data;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("role", user.role);
-      localStorage.setItem("project", user.project);
-
-      if (user.role === "admin") {
-        navigate("/admin");
-      } else if (user.project === "alterlife") {
-        navigate("/alterlife");
-      } 
-        else if (user.project === "nova") {
-       navigate("/nova");
-      }
-      else {
-        navigate("/other");
+      if (user) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("role", user.role);
+        localStorage.setItem("project", user.project);
+  
+        if (user.role === "admin") {
+          navigate("/admin");
+        } else if (user.project === "alterlife") {
+          navigate("/alterlife");
+        } else if (user.project === "nova") {
+          navigate("/nova");
+        } else {
+          navigate("/other");
+        }
+      } else {
+        setError("Login failed: Invalid user data");
       }
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     }
   };
+  
+
 
   return (
     <Container maxWidth="xs">

@@ -3,8 +3,13 @@ import { Navigate } from "react-router-dom";
 
 const AdminRoute = ({ children }) => {
   const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user"));
-
+  let user = null;
+try {
+  const rawUser = localStorage.getItem("user");
+  user = rawUser && rawUser !== "undefined" ? JSON.parse(rawUser) : null;
+} catch (e) {
+  user = null;
+}
   if (!token || !user) return <Navigate to="/" />;
   if (user.role !== "admin") return <Navigate to="/" />;
 

@@ -21,6 +21,15 @@ import LogoutIcon from "@mui/icons-material/Logout";
 
 const API = process.env.REACT_APP_API_URL;
 
+// Helper για ασφαλές JSON parse
+function getUserFromStorage() {
+  try {
+    const raw = localStorage.getItem("user");
+    return raw && raw !== "undefined" ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 const LoginLogs = () => {
   const [logs, setLogs] = useState([]);
@@ -29,10 +38,7 @@ const LoginLogs = () => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("user");
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState(getUserFromStorage);
 
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("theme") === "dark";
@@ -165,7 +171,6 @@ const LoginLogs = () => {
     return Object.values(stats);
   };
 
-
   const navigate = useNavigate();
   const handleLogout = async () => {
     try {
@@ -186,7 +191,6 @@ const LoginLogs = () => {
       navigate("/");
     }
   };
-
 
   return (
     <ThemeProvider theme={theme}>
@@ -213,14 +217,14 @@ const LoginLogs = () => {
                 {darkMode ? "LIGHT" : "DARK"}
               </Button>
 
-  <Button
-    variant="outlined"
-    startIcon={<LogoutIcon />}
-    color="error"
-    onClick={handleLogout}
-  >
-    Logout
-  </Button>
+              <Button
+                variant="outlined"
+                startIcon={<LogoutIcon />}
+                color="error"
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
             </Box>
           </Box>
 

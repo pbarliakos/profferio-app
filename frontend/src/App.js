@@ -13,21 +13,28 @@ import AgentMonitor from "./pages/admin/AgentMonitor";
 import axios from "axios";
 const API = process.env.REACT_APP_API_URL;
 
+// Helper για ασφαλές JSON parse του user
+function getUserFromStorage() {
+  try {
+    const raw = localStorage.getItem("user");
+    return raw && raw !== "undefined" ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 function App() {
   const [darkMode, setDarkMode] = useState(false);
 
   // ✅ Καταγραφή logout όταν κλείνει το tab
   useEffect(() => {
-    const rawUser = localStorage.getItem("user");
-    if (!rawUser) return;
-
-    const user = JSON.parse(rawUser);
+    const user = getUserFromStorage();
     if (!user?._id) return;
 
     const handleUnload = () => {
       const data = JSON.stringify({ userId: user._id });
       const blob = new Blob([data], { type: "application/json" });
-      navigator.sendBeacon("/api/auth/logout-beacon", blob);
+      navigator.sendBeacon(`${API}/api/auth/logout-beacon`, blob);
     };
 
     window.addEventListener("beforeunload", handleUnload);
@@ -38,10 +45,7 @@ function App() {
 
   // ✅ Heartbeat timer για real-time monitoring
   useEffect(() => {
-    const rawUser = localStorage.getItem("user");
-    if (!rawUser) return;
-
-    const user = JSON.parse(rawUser);
+    const user = getUserFromStorage();
     if (!user?._id) return;
 
     const interval = setInterval(() => {
