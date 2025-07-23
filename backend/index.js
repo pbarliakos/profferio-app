@@ -17,10 +17,12 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     "http://profferio.othisisa.gr",
-    "http://profferio.othisisa.gr:3000"
-    //"http://localhost:3000"
-  ]
+    "http://profferio.othisisa.gr:3000",
+    "https://profferio-frontend-staging.onrender.com"
+  ],
+  credentials: true,
 }));
+
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api", emailRoutes);
@@ -44,8 +46,8 @@ app.use("/api/users", userRoutes);
 cron.schedule("*/1 * * * * *", async () => {
   // κάθε 1 sec
   try {
-    const BASE_URL = process.env.BACKEND_URL;
-    axios.post(`${BASE_URL}/api/auth/force-close-inactive-sessions`);
+    const BACKEND_URL = process.env.BACKEND_URL;
+    axios.post(`${BACKEND_URL}/api/auth/force-close-inactive-sessions`);
    // console.log("Checked and closed inactive sessions");
   } catch (err) {
     console.log("Cron error", err.message);
