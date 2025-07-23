@@ -45,7 +45,7 @@ function App() {
     if (!user?._id) return;
 
     const interval = setInterval(() => {
-      axios.post("/api/auth/heartbeat", {
+      axios.post(`${API}/api/auth/heartbeat`, {
         userId: user._id,
       });
     }, 15 * 1000); // κάθε 15 δευτερόλεπτα

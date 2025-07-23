@@ -58,7 +58,7 @@ const handleLogout = async () => {
   try {
     const token = localStorage.getItem("token");
     if (token) {
-      await axios.post("/api/auth/logout", {}, {
+      await axios.post(`${API}/api/auth/logout`, {}, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -105,7 +105,7 @@ const fetchEmailHistory = async () => {
     if (startDate) params.startDate = dayjs(startDate).format("YYYY-MM-DD");
     if (endDate) params.endDate = dayjs(endDate).format("YYYY-MM-DD");
 
-    const res = await axios.get(`/api/email-history`, {
+    const res = await axios.get(`${API}/api/email-history`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -135,7 +135,7 @@ useEffect(() => {
     }
 
     try {
-      await axios.post(`/api/send-welcome-email`,
+      await axios.post(`${API}/api/send-welcome-email`,
         { email },
         {
           headers: {
@@ -154,7 +154,7 @@ useEffect(() => {
 
 const handleExportCSV = async () => {
   try {
-    const res = await axios.get(`/api/email-history/export`, {
+    const res = await axios.get(`${API}/api/email-history/export`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -26,7 +26,7 @@ const AgentMonitor = () => {
   const fetchSessions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/auth/open-sessions", {
+      const res = await axios.get(`${API}/api/auth/open-sessions`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setSessions(res.data);
@@ -43,7 +43,7 @@ const AgentMonitor = () => {
   const handleForceLogout = async (sessionId, userId) => {
     try {
       await axios.post(
-        "/api/auth/force-logout",
+        `${API}/api/auth/force-logout`,
         { userId },
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );

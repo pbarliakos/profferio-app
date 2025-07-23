@@ -22,7 +22,7 @@ const Login = () => {
     e.preventDefault(); // Σημαντικό για να μη γίνει page reload
 
     try {
-      const res = await axios.post("/api/auth/login", {
+      const res = await axios.post(`${API}/api/auth/login`, {
         username,
         password,
       });

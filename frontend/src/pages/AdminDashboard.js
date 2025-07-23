@@ -57,7 +57,7 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
 
 useEffect(() => {
   const fetchUsers = async () => {
-    const res = await axios.get("/api/users", {
+    const res = await axios.get(`${API}/api/users`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setUsers(res.data);
@@ -66,7 +66,7 @@ useEffect(() => {
 }, [token]);
 
   const fetchUsers = async () => {
-    const res = await axios.get("/api/users", {
+    const res = await axios.get(`${API}/api/users`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setUsers(res.data);
@@ -80,7 +80,7 @@ useEffect(() => {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Σίγουρα θες να διαγράψεις τον χρήστη;")) return;
-    await axios.delete(`/api/users/${id}`, {
+    await axios.delete(`${API}/api/users/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setSnackbar("Ο χρήστης διαγράφηκε");
@@ -89,12 +89,12 @@ useEffect(() => {
 
   const handleSave = async () => {
     if (editingUser) {
-      await axios.put(`/api/users/${editingUser._id}`, newUser, {
+      await axios.put(`${API}/api/users/${editingUser._id}`, newUser, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSnackbar("Ο χρήστης ενημερώθηκε");
     } else {
-      await axios.post("/api/users", newUser, {
+      await axios.post(`${API}/api/users`, newUser, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSnackbar("Ο χρήστης δημιουργήθηκε");
@@ -108,7 +108,7 @@ const handleLogout = async () => {
   try {
     const token = localStorage.getItem("token");
     if (token) {
-      await axios.post("/api/auth/logout", {}, {
+      await axios.post(`${API}/api/auth/logout`, {}, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

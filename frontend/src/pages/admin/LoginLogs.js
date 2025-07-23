@@ -47,7 +47,7 @@ const LoginLogs = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const res = await axios.get("/api/login-logs", {
+        const res = await axios.get(`${API}/api/login-logs`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -171,7 +171,7 @@ const LoginLogs = () => {
     try {
       const token = localStorage.getItem("token");
       if (token) {
-        await axios.post("/api/auth/logout", {}, {
+        await axios.post(`${API}/api/auth/logout`, {}, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
