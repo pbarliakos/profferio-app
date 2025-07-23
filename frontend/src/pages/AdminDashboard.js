@@ -28,16 +28,19 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 const API = process.env.REACT_APP_API_URL;
 
-// --- SAFE USER FROM STORAGE ---
+// --- DEBUG LOCALSTORAGE --- //
 let userInfo = {};
 try {
   const raw = localStorage.getItem("user");
+  console.log("📦 localStorage.getItem('user'):", raw);
   userInfo = raw && raw !== "undefined" ? JSON.parse(raw) : {};
-} catch {
+} catch (err) {
+  console.error("❌ Failed to parse localStorage user", err);
   userInfo = {};
 }
-const { fullName, role } = userInfo;
-// ------------------------------
+
+const { fullName = "N/A", role = "N/A" } = userInfo;
+console.log("✅ Extracted user info:", { fullName, role });
 
 const AdminDashboard = ({ darkMode, setDarkMode }) => {
   const [users, setUsers] = useState([]);
@@ -65,19 +68,27 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const res = await axios.get(`${API}/api/users`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUsers(res.data);
+      try {
+        const res = await axios.get(`${API}/api/users`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUsers(res.data);
+      } catch (err) {
+        console.error("❌ Failed to fetch users:", err);
+      }
     };
     fetchUsers();
   }, [token]);
 
   const fetchUsers = async () => {
-    const res = await axios.get(`${API}/api/users`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setUsers(res.data);
+    try {
+      const res = await axios.get(`${API}/api/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUsers(res.data);
+    } catch (err) {
+      console.error("❌ Failed to fetch users:", err);
+    }
   };
 
   const handleEdit = (user) => {
@@ -96,20 +107,23 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
   };
 
   const handleSave = async () => {
-    if (editingUser) {
-      await axios.put(`${API}/api/users/${editingUser._id}`, newUser, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSnackbar("Ο χρήστης ενημερώθηκε");
-    } else {
-      await axios.post(`${API}/api/users`, newUser, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSnackbar("Ο χρήστης δημιουργήθηκε");
+    try {
+      if (editingUser) {
+        await axios.put(`${API}/api/users/${editingUser._id}`, newUser, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSnackbar("Ο χρήστης ενημερώθηκε");
+      } else {
+        await axios.post(`${API}/api/users`, newUser, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSnackbar("Ο χρήστης δημιουργήθηκε");
+      }
+      setOpenDialog(false);
+      fetchUsers();
+    } catch (err) {
+      console.error("❌ Failed to save user:", err);
     }
-
-    setOpenDialog(false);
-    fetchUsers();
   };
 
   const handleLogout = async () => {
@@ -202,25 +216,32 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
     document.body.removeChild(link);
   };
 
+  console.log("🔍 Rendering AdminDashboard for role:", role);
+
   return (
     <Box p={4}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h4">Admin Dashboard</Typography>
+
         {role === "admin" && (
           <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 3 }}>
-            {projectButtons.map((btn) => (
-              <Button
-                key={btn.path}
-                variant="outlined"
-                size="medium"
-                endIcon={<OpenInNewIcon />}
-                onClick={() => window.open(btn.path, "_blank")}
-              >
-                {btn.label}
-              </Button>
-            ))}
+            {projectButtons.map((btn) => {
+              console.log("🧭 Rendering button:", btn.label);
+              return (
+                <Button
+                  key={btn.path}
+                  variant="outlined"
+                  size="medium"
+                  endIcon={<OpenInNewIcon />}
+                  onClick={() => window.open(btn.path, "_blank")}
+                >
+                  {btn.label}
+                </Button>
+              );
+            })}
           </Stack>
         )}
+
         <Box display="flex" gap={2} alignItems="center">
           <Box textAlign="right">
             <Typography variant="caption" color="text.secondary">{fullName} | {role}</Typography>
@@ -242,117 +263,52 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
           </Button>
         </Box>
       </Box>
+
+      {/* Cards */}
       <Box display="flex" gap={2} flexWrap="wrap" mb={4}>
         {/* Total Users */}
-        <Paper
-          sx={{
-            flex: 1,
-            minWidth: 220,
-            p: 3,
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            bgcolor: "#e3f2fd",
-            borderRadius: 2,
-          }}
-          elevation={3}
-        >
+        <Paper sx={{ flex: 1, minWidth: 220, p: 3, display: "flex", alignItems: "center", gap: 2, bgcolor: "#e3f2fd", borderRadius: 2 }} elevation={3}>
           <PeopleIcon color="primary" sx={{ fontSize: 40 }} />
           <Box>
-            <Typography variant="subtitle2" color="#525252">
-              Σύνολο Χρηστών
-            </Typography>
+            <Typography variant="subtitle2" color="#525252">Σύνολο Χρηστών</Typography>
             <Typography variant="h5" color="#000000">{total}</Typography>
           </Box>
         </Paper>
+
         {/* Users per Project */}
-        <Paper
-          sx={{
-            flex: 1,
-            minWidth: 220,
-            p: 3,
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            bgcolor: "#f3e5f5",
-            borderRadius: 2,
-          }}
-          elevation={3}
-        >
+        <Paper sx={{ flex: 1, minWidth: 220, p: 3, display: "flex", alignItems: "center", gap: 2, bgcolor: "#f3e5f5", borderRadius: 2 }} elevation={3}>
           <WorkspacesIcon color="secondary" sx={{ fontSize: 40 }} />
           <Box>
-            <Typography variant="subtitle2" color="#525252">
-              Χρήστες ανά Project
-            </Typography>
+            <Typography variant="subtitle2" color="#525252">Χρήστες ανά Project</Typography>
             {Object.entries(projects).map(([key, val]) => (
-              <Typography key={key} variant="body2" color="#000000">
-                {key}: {val}
-              </Typography>
+              <Typography key={key} variant="body2" color="#000000">{key}: {val}</Typography>
             ))}
           </Box>
         </Paper>
+
         {/* Users per Role */}
-        <Paper
-          sx={{
-            flex: 1,
-            minWidth: 220,
-            p: 3,
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            bgcolor: "#e8f5e9",
-            borderRadius: 2,
-          }}
-          elevation={3}
-        >
+        <Paper sx={{ flex: 1, minWidth: 220, p: 3, display: "flex", alignItems: "center", gap: 2, bgcolor: "#e8f5e9", borderRadius: 2 }} elevation={3}>
           <GroupsIcon color="success" sx={{ fontSize: 40 }} />
           <Box>
-            <Typography variant="subtitle2" color="#525252">
-              Χρήστες ανά Ρόλο
-            </Typography>
+            <Typography variant="subtitle2" color="#525252">Χρήστες ανά Ρόλο</Typography>
             {Object.entries(roles).map(([key, val]) => (
-              <Typography key={key} variant="body2" color="#000000">
-                {key}: {val}
-              </Typography>
+              <Typography key={key} variant="body2" color="#000000">{key}: {val}</Typography>
             ))}
           </Box>
         </Paper>
       </Box>
+
+      {/* Users Table */}
       <Box display="flex" justifyContent="space-between" mb={2}>
-        <TextField
-          label="Αναζήτηση"
-          fullWidth
-          margin="normal"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => {
-            setEditingUser(null);
-            setNewUser({
-              fullName: "",
-              username: "",
-              email: "",
-              password: "",
-              role: "user",
-              project: "alterlife",
-            });
-            setOpenDialog(true);
-          }}
-          sx={{ ml: 2, mt: 2, height: "55px" }}
-        >
-          Νεος Χρηστης
-        </Button>
-        <Button
-          variant="outlined"
-          onClick={handleExport}
-          sx={{ ml: 2, mt: 2, height: "55px" }}
-        >
-          Export Users
-        </Button>
+        <TextField label="Αναζήτηση" fullWidth margin="normal" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Button variant="contained" startIcon={<Add />} onClick={() => {
+          setEditingUser(null);
+          setNewUser({ fullName: "", username: "", email: "", password: "", role: "user", project: "alterlife" });
+          setOpenDialog(true);
+        }} sx={{ ml: 2, mt: 2, height: "55px" }}>Νεος Χρηστης</Button>
+        <Button variant="outlined" onClick={handleExport} sx={{ ml: 2, mt: 2, height: "55px" }}>Export Users</Button>
       </Box>
+
       <DataGrid
         rows={filteredUsers}
         columns={columns}
@@ -360,7 +316,8 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
         autoHeight
         disableRowSelectionOnClick
       />
-      {/* Dialog Create/Edit */}
+
+      {/* Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{editingUser ? "Επεξεργασία Χρήστη" : "Νέος Χρήστης"}</DialogTitle>
         <DialogContent>
@@ -368,26 +325,12 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
           <TextField label="Username" fullWidth margin="dense" value={newUser.username} onChange={(e) => setNewUser({ ...newUser, username: e.target.value })} />
           <TextField label="Email" fullWidth margin="dense" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
           <TextField label="Password" fullWidth margin="dense" type="password" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} />
-          <TextField
-            select
-            label="Ρόλος"
-            fullWidth
-            margin="dense"
-            value={newUser.role}
-            onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-          >
+          <TextField select label="Ρόλος" fullWidth margin="dense" value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}>
             <MenuItem value="admin">Admin</MenuItem>
             <MenuItem value="manager">Manager</MenuItem>
             <MenuItem value="user">User</MenuItem>
           </TextField>
-          <TextField
-            select
-            label="Project"
-            fullWidth
-            margin="dense"
-            value={newUser.project}
-            onChange={(e) => setNewUser({ ...newUser, project: e.target.value })}
-          >
+          <TextField select label="Project" fullWidth margin="dense" value={newUser.project} onChange={(e) => setNewUser({ ...newUser, project: e.target.value })}>
             <MenuItem value="alterlife">Alterlife</MenuItem>
             <MenuItem value="nova">Nova</MenuItem>
             <MenuItem value="admin">Admin</MenuItem>
@@ -399,6 +342,7 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
           <Button variant="contained" onClick={handleSave}>Αποθήκευση</Button>
         </DialogActions>
       </Dialog>
+
       <Snackbar
         open={!!snackbar}
         autoHideDuration={3000}
