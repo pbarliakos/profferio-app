@@ -42,15 +42,17 @@ const Alterlife = () => {
     const saved = localStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
   });
-  
-  useEffect(() => {
-    if (!user || !user._id) return;
-  
-    const today = new Date().toISOString().slice(0, 10);
-    setHistoryFilters({ customerId: "", from: today, to: today });
-  
-    handleSearchHistory(1);
-  }, [user]);
+
+useEffect(() => {
+  if (!user || !user._id) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const defaultFilters = { customerId: "", from: today, to: today };
+
+  setHistoryFilters(defaultFilters);
+  handleSearchHistory(1, defaultFilters);
+}, [user]);
+
 
   const [searchHistory, setSearchHistory] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -125,9 +127,9 @@ const Alterlife = () => {
     }
   };
 
-  const handleSearchHistory = async (pageNumber = 1) => {
+  const handleSearchHistory = async (pageNumber = 1, filters = historyFilters) => {
     try {
-      const params = new URLSearchParams({ ...historyFilters, page: pageNumber, limit: 20 }).toString();
+      const params = new URLSearchParams({ ...filters, page: pageNumber, limit: 20 }).toString();
       const res = await fetch(`${API}/api/alterlife/history?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
