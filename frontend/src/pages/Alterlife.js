@@ -45,7 +45,7 @@ const Alterlife = () => {
 
   const token = localStorage.getItem("token");
 
-  const hasAccess = user && (user.role === "admin" || user.project?.includes("alterlife"));
+  const hasAccess = user && (user.role === "admin" || user.project === "alterlife");
   if (!hasAccess) {
     return (
       <ThemeProvider theme={alterlifeTheme}>
