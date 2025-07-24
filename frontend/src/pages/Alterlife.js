@@ -11,22 +11,40 @@ const API = process.env.REACT_APP_API_URL;
 
 const alterlifeTheme = createTheme({
   palette: {
-    mode: "dark",
+    mode: "light",
     background: {
-      default: "#000000",
-      paper: "#121212",
+      default: "#f7f7f7",
+      paper: "#ffffff",
     },
     primary: {
       main: "#fff000",
     },
     text: {
-      primary: "#ffffff",
-      secondary: "#cccccc",
+      primary: "#111111",
+      secondary: "#555555",
     },
   },
   typography: {
     fontFamily: "'Roboto', sans-serif",
     fontWeightBold: 700,
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: "16px",
+          boxShadow: "0px 4px 12px rgba(0,0,0,0.05)",
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: "none",
+          fontWeight: 600,
+        },
+      },
+    },
   },
 });
 
@@ -149,7 +167,7 @@ const Alterlife = () => {
         )}
 
         {customer && (
-          <Paper sx={{ mt: 4, p: 3 }}>
+          <Paper sx={{ mt: 4, p: 3, border: '1px solid #eee' }}>
             <Typography variant="h6">{customer.fullName}</Typography>
             <Typography variant="body2">Email: {customer.email}</Typography>
             <Typography variant="body2">Τηλέφωνο: {customer.phone}</Typography>
@@ -171,10 +189,9 @@ const Alterlife = () => {
 
             <Button
               variant="contained"
-              color="primary"
+              sx={{ bgcolor: "#fff000", color: "#000", '&:hover': { bgcolor: "#e6e600" }, mt: 2 }}
               disabled={!selectedOffer}
               onClick={handleConfirm}
-              sx={{ mt: 2 }}
             >
               Επιβεβαίωση Επιλογής
             </Button>
@@ -187,7 +204,7 @@ const Alterlife = () => {
           <Paper sx={{ mt: 4, p: 3 }}>
             <Typography variant="h6">📜 Ιστορικό Επιλογών</Typography>
             {history.map((h, i) => (
-              <Card key={i} sx={{ mt: 2 }}>
+              <Card key={i} sx={{ mt: 2, backgroundColor: "#fdfdfd" }}>
                 <CardContent>
                   <Typography>
                     ✅ Επιλέχθηκε: <strong>{h.selectedOffer}</strong>
