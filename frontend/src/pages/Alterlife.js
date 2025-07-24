@@ -4,9 +4,9 @@ import {
   FormControlLabel, Radio, Divider, CircularProgress, Box, CssBaseline
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useAuth } from "../context/AuthContext";
-import Header from "../components/Header";
-import SuccessAnimation from "../components/SuccessAnimation";
+import { useAuth } from "../../context/AuthContext";
+import Header from "../../components/Header";
+import SuccessAnimation from "../../components/SuccessAnimation";
 
 const API = process.env.REACT_APP_API_URL;
 
