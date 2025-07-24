@@ -42,6 +42,16 @@ const Alterlife = () => {
     const saved = localStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
   });
+  
+  useEffect(() => {
+    if (!user || !user._id) return;
+  
+    const today = new Date().toISOString().slice(0, 10);
+    setHistoryFilters({ customerId: "", from: today, to: today });
+  
+    handleSearchHistory(1);
+  }, [user]);
+
   const [searchHistory, setSearchHistory] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
