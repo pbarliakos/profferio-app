@@ -233,7 +233,7 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
                   variant="outlined"
                   size="medium"
                   endIcon={<OpenInNewIcon />}
-                  onClick={() => window.open(`${window.location.origin}${btn.path}`, "_blank")}
+                  onClick={() => navigate(btn.path)}
                 >
                   {btn.label}
                 </Button>
