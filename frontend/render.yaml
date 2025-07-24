@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: profferio-frontend-staging
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://profferio-backend-staging.onrender.com
+    routes:
+      - type: rewrite
+        source: "/*"
+        destination: "/index.html"
