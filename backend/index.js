@@ -31,7 +31,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api", emailRoutes);
 app.use("/api/login-logs", require("./routes/logs"));
-app.use("/api/alterlife", alterlifeRoutes); // ✅ ΠΡΟΣΘΗΚΗ ΕΔΩ
+app.use("/api/alterlife", alterlifeRoutes);
+
 
 connectDB();
 
