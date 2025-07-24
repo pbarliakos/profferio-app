@@ -45,14 +45,9 @@ const Alterlife = () => {
   const [searchHistory, setSearchHistory] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
-  const today = new Date().toISOString().slice(0, 10);
-  const [historyFilters, setHistoryFilters] = useState({ customerId: "", from: today, to: today });
+  const [historyFilters, setHistoryFilters] = useState({ customerId: "", from: "", to: "" });
 
   const token = localStorage.getItem("token");
-
-  useEffect(() => {
-    handleSearchHistory(1);
-  }, []);
 
   const hasAccess = user && (user.role === "admin" || user.project === "alterlife");
   if (!hasAccess) {
@@ -215,7 +210,7 @@ const Alterlife = () => {
 
         {history.length > 0 && (
           <Paper sx={{ mt: 4, p: 3 }}>
-            <Typography variant="h6">📜 Ιστορικό Προσφορών</Typography>
+            <Typography variant="h6">📜 Ιστορικό Επιλογών</Typography>
             {history.map((h, i) => (
               <Card key={i} sx={{ mt: 2 }}>
                 <CardContent>
@@ -285,7 +280,7 @@ const Alterlife = () => {
             </Box>
           )}
         </Paper>
-        </Container>
+      </Container>
     </ThemeProvider>
   );
 };
