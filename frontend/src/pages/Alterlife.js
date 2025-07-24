@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container, TextField, Button, Typography, Paper, Grid, Card, CardContent, RadioGroup,
   FormControlLabel, Radio, Divider, CircularProgress, Box, CssBaseline
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useAuth } from "../context/AuthContext";
 import Header from "../components/Header";
 import SuccessAnimation from "../components/SuccessAnimation";
 
@@ -39,16 +38,19 @@ const Alterlife = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  });
 
-  const { token, user } = useAuth();
+  const token = localStorage.getItem("token");
 
-  // Access control: only allow admin or users with project 'alterlife'
   const hasAccess = user && (user.role === "admin" || user.projects?.includes("alterlife"));
   if (!hasAccess) {
     return (
       <ThemeProvider theme={alterlifeTheme}>
         <CssBaseline />
-        <Header project="Alterlife" />
+        <Header user={user} token={token} project="Alterlife" />
         <Container maxWidth="md" sx={{ mt: 4 }}>
           <Typography variant="h6" color="error">
             ⛔ Δεν έχετε δικαίωμα πρόσβασης σε αυτό το project.
@@ -112,7 +114,7 @@ const Alterlife = () => {
   return (
     <ThemeProvider theme={alterlifeTheme}>
       <CssBaseline />
-      <Header project="Alterlife" />
+      <Header user={user} token={token} project="Alterlife" />
       <Container maxWidth="md" sx={{ mt: 4 }}>
         <Typography variant="h5" sx={{ mb: 2 }}>
           Αναζήτηση Πελάτη (Alterlife)
