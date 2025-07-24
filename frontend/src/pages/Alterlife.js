@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   Container, TextField, Button, Typography, Paper, Grid, Card, CardContent, RadioGroup,
-  FormControlLabel, Radio, Divider, CircularProgress, Box, CssBaseline
+  FormControlLabel, Radio, Divider, CircularProgress, Box, CssBaseline, Pagination
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Header from "../components/Header";
@@ -42,6 +42,10 @@ const Alterlife = () => {
     const saved = localStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
   });
+  const [searchHistory, setSearchHistory] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const [historyFilters, setHistoryFilters] = useState({ customerId: "", from: "", to: "" });
 
   const token = localStorage.getItem("token");
 
@@ -109,6 +113,27 @@ const Alterlife = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearchHistory = async (pageNumber = 1) => {
+    try {
+      const params = new URLSearchParams({ ...historyFilters, page: pageNumber, limit: 20 }).toString();
+      const res = await fetch(`${API}/api/alterlife/history?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSearchHistory(data.results);
+        setTotalPages(data.totalPages || 1);
+      }
+    } catch (err) {
+      console.error("❌ History search error", err);
+    }
+  };
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    handleSearchHistory(value);
   };
 
   return (
@@ -200,6 +225,61 @@ const Alterlife = () => {
             ))}
           </Paper>
         )}
+
+        <Paper sx={{ mt: 4, p: 3 }}>
+          <Typography variant="h6">🔎 Αναζήτηση Ιστορικού</Typography>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={4}>
+              <TextField
+                label="Κωδικός πελάτη"
+                fullWidth
+                value={historyFilters.customerId}
+                onChange={(e) => setHistoryFilters({ ...historyFilters, customerId: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                type="date"
+                label="Από"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={historyFilters.from}
+                onChange={(e) => setHistoryFilters({ ...historyFilters, from: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                type="date"
+                label="Έως"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={historyFilters.to}
+                onChange={(e) => setHistoryFilters({ ...historyFilters, to: e.target.value })}
+              />
+            </Grid>
+          </Grid>
+          <Button variant="outlined" onClick={() => handleSearchHistory(1)} sx={{ mt: 2 }}>
+            Αναζήτηση Ιστορικού
+          </Button>
+
+          {searchHistory.length > 0 && (
+            <Box sx={{ mt: 2 }}>
+              {searchHistory.map((item, idx) => (
+                <Card key={idx} sx={{ mt: 2 }}>
+                  <CardContent>
+                    <Typography>
+                      ✅ <strong>{item.selectedOffer}</strong>
+                    </Typography>
+                    <Typography variant="body2">
+                      Κωδικός: {item.customerId} | Από: {item.selectedBy?.username || "—"} | {new Date(item.selectedAt).toLocaleString()}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              ))}
+              <Pagination count={totalPages} page={page} onChange={handlePageChange} sx={{ mt: 2 }} />
+            </Box>
+          )}
+        </Paper>
       </Container>
     </ThemeProvider>
   );
