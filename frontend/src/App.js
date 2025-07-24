@@ -23,6 +23,15 @@ function getUserFromStorage() {
   }
 }
 
+const token = localStorage.getItem("token");
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+if (!token) {
+  return <Navigate to="/" />;
+}
+
+
+
 function App() {
   const [darkMode, setDarkMode] = useState(false);
 
