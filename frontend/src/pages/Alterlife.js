@@ -4,9 +4,9 @@ import {
   FormControlLabel, Radio, Divider, CircularProgress, Box, CssBaseline
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useAuth } from "../../context/AuthContext";
-import Header from "../../components/Header";
-import SuccessAnimation from "../../components/SuccessAnimation";
+import { useAuth } from "../context/AuthContext";
+import Header from "../components/Header";
+import SuccessAnimation from "../components/SuccessAnimation";
 
 const API = process.env.REACT_APP_API_URL;
 
@@ -41,6 +41,22 @@ const Alterlife = () => {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const { token, user } = useAuth();
+
+  // Access control: only allow admin or users with project 'alterlife'
+  const hasAccess = user && (user.role === "admin" || user.projects?.includes("alterlife"));
+  if (!hasAccess) {
+    return (
+      <ThemeProvider theme={alterlifeTheme}>
+        <CssBaseline />
+        <Header project="Alterlife" />
+        <Container maxWidth="md" sx={{ mt: 4 }}>
+          <Typography variant="h6" color="error">
+            ⛔ Δεν έχετε δικαίωμα πρόσβασης σε αυτό το project.
+          </Typography>
+        </Container>
+      </ThemeProvider>
+    );
+  }
 
   const handleSearch = async () => {
     setCustomer(null);
