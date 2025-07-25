@@ -17,6 +17,10 @@ router.get("/history", protect, async (req, res) => {
       if (from) query.selectedAt.$gte = new Date(from);
       if (to) query.selectedAt.$lte = new Date(to);
     }
+    
+    if (req.user?.role !== "admin") {
+      query.selectedBy = req.user._id;
+    }
 
     const skip = (page - 1) * limit;
 
