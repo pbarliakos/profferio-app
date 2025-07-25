@@ -45,14 +45,17 @@ const Alterlife = () => {
 
   useEffect(() => {
     if (user?._id) {
-      const today = new Date().toISOString().split("T")[0];
-      const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+      const today = new Date();
+      const from = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+      const to = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+  
       const defaultFilters = {
         customerId: "",
-        from: today,
-        to: tomorrow,
+        from,
+        to,
         selectedBy: user._id,
       };
+  
       setHistoryFilters(defaultFilters);
       handleSearchHistory(1, defaultFilters);
     }
@@ -294,10 +297,10 @@ const Alterlife = () => {
                 <Card key={idx} sx={{ mt: 2 }}>
                   <CardContent>
                     <Typography>
-                      ✅ <strong>{item.selectedOffer}</strong>
+                      ✅ <strong>{item.customerId}</strong>
                     </Typography>
                     <Typography variant="body2">
-                      Κωδικός: {item.customerId} | Από: {item.selectedBy?.username || "—"} | {new Date(item.selectedAt).toLocaleString()}
+                      Κωδικός: {item.selectedOffer} | Από: {item.selectedBy?.username || "—"} | {new Date(item.selectedAt).toLocaleString()}
                     </Typography>
                   </CardContent>
                 </Card>
