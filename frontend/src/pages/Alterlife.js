@@ -43,15 +43,20 @@ const Alterlife = () => {
     return saved ? JSON.parse(saved) : null;
   });
 
-useEffect(() => {
-  if (!user || !user._id) return;
-
-  const today = new Date().toISOString().slice(0, 10);
-  const defaultFilters = { customerId: "", from: today, to: today };
-
-  setHistoryFilters(defaultFilters);
-  handleSearchHistory(1, defaultFilters);
-}, [user]);
+  useEffect(() => {
+    if (user?._id) {
+      const today = new Date().toISOString().split("T")[0];
+      const defaultFilters = {
+        customerId: "",
+        from: today,
+        to: today,
+        selectedBy: user._id,
+      };
+      setHistoryFilters(defaultFilters);
+      handleSearchHistory(1, defaultFilters);
+    }
+  }, [user]);
+  
 
 
   const [searchHistory, setSearchHistory] = useState([]);
@@ -129,7 +134,14 @@ useEffect(() => {
 
   const handleSearchHistory = async (pageNumber = 1, filters = historyFilters) => {
     try {
-      const params = new URLSearchParams({ ...filters, page: pageNumber, limit: 20 }).toString();
+      const searchParams = { ...filters, page: pageNumber, limit: 20 };
+  
+      if (filters.selectedBy) {
+        searchParams.selectedBy = filters.selectedBy;
+      }
+  
+      const params = new URLSearchParams(searchParams).toString();
+  
       const res = await fetch(`${API}/api/alterlife/history?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -142,6 +154,7 @@ useEffect(() => {
       console.error("❌ History search error", err);
     }
   };
+  
 
   const handlePageChange = (event, value) => {
     setPage(value);
