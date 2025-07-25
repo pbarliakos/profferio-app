@@ -35,10 +35,10 @@ router.post("/send-welcome-email", protect, async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ error: "Email is required" });
 
- const mailOptions = {
+  const mailOptions = {
     from: "info@novasales.gr",
     to: email,
-    subject: "Οδηγίες για Gigabit Κουπόνι",
+    subject: "NOVA - Οδηγίες για Gigabit Κουπόνι",
     html: `
       <h2>Οδηγίες έκδοσης κουπονιού για Gigabit Δράση:</h2>
       <br><br>
@@ -70,7 +70,9 @@ router.post("/send-welcome-email", protect, async (req, res) => {
 
       <b>Βήμα 5ο:</b> Πληκτρολογείτε στην μπάρα αναζήτησης ολόκληρη τη διεύθυνση και επιλέγετε το κτίριο.
       <br><br>
-      <img src="cid:step5@profferio" />
+      <img src="cid:step5.1@profferio" />
+      <br><br>
+      <img src="cid:step5.2@profferio" />
       <br><br>
       <br><br>
 
@@ -82,7 +84,9 @@ router.post("/send-welcome-email", protect, async (req, res) => {
 
       <b>Βήμα 7ο:</b> Θα προχωρήσετε σε  επαλήθευση του Αριθμού ΤΗΛ. και Email με τους μοναδικούς αριθμούς (OTP) που θα λάβετε με sms στο κινητό σας.
       <br><br>
-      <img src="cid:step7@profferio" />
+      <img src="cid:step7.1@profferio" />
+      <br><br>
+      <img src="cid:step7.2@profferio" />
       <br><br>
       <br><br>
 
@@ -112,25 +116,28 @@ router.post("/send-welcome-email", protect, async (req, res) => {
       <br><br>
       <img src="cid:step11.2@profferio" />
       <br><br>
-      <br><br>
 
       <p>Με την Υποβολή, δημιουργείται ο μοναδικός κωδικός του Voucher, ο οποίος αποστέλλεται με Email και SMS.</p>
       <br><br>
       <p><strong>ΠΡΟΣΟΧΗ:</strong> Αν οι έλεγχοι αποτύχουν, η αίτηση απορρίπτεται και πρέπει να υποβληθεί ξανά.</p>
       <br><br>
     `,
-     attachments: [
-      ...Array.from({ length: 9 }, (_, i) => ({
-        filename: `step${i + 1}.png`,
-        path: path.join(__dirname, "..", "mailtmp", `step${i + 1}.png`),
-        cid: `step${i + 1}@profferio`,
-      })),
-      { filename: "step10.1.png", path: path.join(__dirname, "..", "mailtmp", "step10.1.png"), cid: "step10.1@profferio" },
-      { filename: "step10.2.png", path: path.join(__dirname, "..", "mailtmp", "step10.2.png"), cid: "step10.2@profferio" },
-      { filename: "step11.1.png", path: path.join(__dirname, "..", "mailtmp", "step11.1.png"), cid: "step11.1@profferio" },
-      { filename: "step11.2.png", path: path.join(__dirname, "..", "mailtmp", "step11.2.png"), cid: "step11.2@profferio" },
-    ],
-  };
+attachments: [
+  ...[
+    "step1", "step2", "step3", "step4",
+    "step5.1", "step5.2",
+    "step6",
+    "step7.1", "step7.2",
+    "step8", "step9",
+    "step10.1", "step10.2",
+    "step11.1", "step11.2"
+  ].map(name => ({
+    filename: `${name}.png`,
+    path: path.join(__dirname, "..", "mailtmp", `${name}.png`),
+    cid: `${name}@profferio`
+  }))
+]
+ };
 
 
       const info = await transporter.sendMail(mailOptions);
