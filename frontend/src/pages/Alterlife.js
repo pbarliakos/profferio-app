@@ -46,10 +46,11 @@ const Alterlife = () => {
   useEffect(() => {
     if (user?._id) {
       const today = new Date().toISOString().split("T")[0];
+      const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
       const defaultFilters = {
         customerId: "",
         from: today,
-        to: today,
+        to: tomorrow,
         selectedBy: user._id,
       };
       setHistoryFilters(defaultFilters);
