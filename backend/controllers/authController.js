@@ -3,6 +3,11 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const LoginLog = require("../models/LoginLog");
 
+// ✅ Time Tracking (NEW)
+const TimeDaily = require("../models/TimeDaily");
+const { DateTime } = require("luxon");
+const TZ = "Europe/Athens";
+
 // Register
 exports.register = async (req, res) => {
   try {
@@ -44,11 +49,11 @@ exports.login = async (req, res) => {
       logoutAt: { $exists: false }
     });
 
-if (existingSession && user.role !== "admin") {
-  return res.status(403).json({
-    message: "Υπάρχει ήδη ενεργή συνεδρία για αυτό το όνομα χρήστη. Μόνο ένα session επιτρέπεται κάθε φορά."
-  });
-}
+    if (existingSession && user.role !== "admin") {
+      return res.status(403).json({
+        message: "Υπάρχει ήδη ενεργή συνεδρία για αυτό το όνομα χρήστη. Μόνο ένα session επιτρέπεται κάθε φορά."
+      });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
@@ -70,14 +75,37 @@ if (existingSession && user.role !== "admin") {
     console.log("project:", user.project);
     console.log("fullName:", user.fullName);
 
+    const now = new Date();
+
     await LoginLog.create({
       userId: user._id,
       username: user.username,
       project: user.project,
       fullName: user.fullName,
-      loginAt: new Date(),
-      lastSeen: new Date()
+      loginAt: now,
+      lastSeen: now
     });
+
+    // ✅ Time Tracking: δημιουργεί/κρατάει το first login της ημέρας (Europe/Athens)
+    const dateKey = DateTime.fromJSDate(now).setZone(TZ).toFormat("yyyy-LL-dd");
+
+    await TimeDaily.findOneAndUpdate(
+      { userId: user._id, dateKey },
+      {
+        $setOnInsert: {
+          userId: user._id,
+          dateKey,
+          firstLoginAt: now,
+          status: "open",
+          breakMs: 0,
+          totalPresenceMs: 0,
+          workingMs: 0,
+          breakOpenAt: null,
+          lastLogoutAt: null
+        }
+      },
+      { upsert: true, new: true }
+    );
 
     res.json({
       token,

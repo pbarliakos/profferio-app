@@ -12,6 +12,9 @@ import LoginLogs from "./pages/admin/LoginLogs";
 import AgentMonitor from "./pages/admin/AgentMonitor";
 import axios from "axios";
 
+// ✅ NEW
+import MyTime from "./pages/MyTime";
+
 function App() {
   const [darkMode, setDarkMode] = useState(false);
 
@@ -30,9 +33,7 @@ function App() {
     };
 
     window.addEventListener("beforeunload", handleUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleUnload);
-    };
+    return () => window.removeEventListener("beforeunload", handleUnload);
   }, []);
 
   // ✅ Heartbeat timer για real-time monitoring
@@ -44,10 +45,8 @@ function App() {
     if (!user?._id) return;
 
     const interval = setInterval(() => {
-      axios.post("/api/auth/heartbeat", {
-        userId: user._id,
-      });
-    }, 15 * 1000); // κάθε 15 δευτερόλεπτα
+      axios.post("/api/auth/heartbeat", { userId: user._id });
+    }, 15 * 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -55,9 +54,7 @@ function App() {
   const theme = useMemo(
     () =>
       createTheme({
-        palette: {
-          mode: darkMode ? "dark" : "light",
-        },
+        palette: { mode: darkMode ? "dark" : "light" },
       }),
     [darkMode]
   );
@@ -71,15 +68,12 @@ function App() {
 
           {/* Admin Dashboard */}
           <Route element={<ProtectedRoute allowedRole="admin" />}>
-            <Route
-              path="/admin"
-              element={
-                <AdminDashboard
-                  darkMode={darkMode}
-                  setDarkMode={setDarkMode}
-                />
-              }
-            />
+            <Route path="/admin" element={<AdminDashboard darkMode={darkMode} setDarkMode={setDarkMode} />} />
+          </Route>
+
+          {/* Time Project */}
+          <Route element={<ProtectedRoute allowedProject="time" />}>
+            <Route path="/my-time" element={<MyTime />} />
           </Route>
 
           {/* Alterlife */}
@@ -87,12 +81,12 @@ function App() {
             <Route path="/alterlife" element={<Alterlife />} />
           </Route>
 
-          {/* Nova Project */}
+          {/* Nova */}
           <Route element={<ProtectedRoute allowedProject="nova" />}>
             <Route path="/nova" element={<Nova />} />
           </Route>
 
-          {/* Logins Logs */}
+          {/* Login Logs */}
           <Route element={<ProtectedRoute allowedProject="admin" />}>
             <Route path="/admin/loginlogs" element={<LoginLogs />} />
           </Route>
@@ -102,7 +96,7 @@ function App() {
             <Route path="/admin/AgentMonitor" element={<AgentMonitor />} />
           </Route>
 
-          {/* Other Project */}
+          {/* Other */}
           <Route element={<ProtectedRoute allowedProject="other" />}>
             <Route path="/other" element={<Other />} />
           </Route>

@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  Container,
-  TextField,
-  Button,
-  Typography,
-  Paper,
-} from "@mui/material";
+import { Container, TextField, Button, Typography, Paper } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import LogoHeader from "../components/LogoHeader";
@@ -17,14 +11,10 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Σημαντικό για να μη γίνει page reload
+    e.preventDefault();
 
     try {
-      const res = await axios.post("/api/auth/login", {
-        username,
-        password,
-      });
-      
+      const res = await axios.post("/api/auth/login", { username, password });
 
       const { token, user } = res.data;
       localStorage.setItem("token", token);
@@ -34,13 +24,16 @@ const Login = () => {
 
       if (user.role === "admin") {
         navigate("/admin");
+        return;
+      }
+
+      if (user.project === "time") {
+        navigate("/my-time");
       } else if (user.project === "alterlife") {
         navigate("/alterlife");
-      } 
-        else if (user.project === "nova") {
-       navigate("/nova");
-      }
-      else {
+      } else if (user.project === "nova") {
+        navigate("/nova");
+      } else {
         navigate("/other");
       }
     } catch (err) {
@@ -76,13 +69,7 @@ const Login = () => {
               {error}
             </Typography>
           )}
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ mt: 2 }}
-          >
+          <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
             Login
           </Button>
         </form>

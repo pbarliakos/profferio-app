@@ -7,7 +7,7 @@ const userRoutes = require("./routes/users");
 const emailRoutes = require("./routes/emailRoutes");
 const cron = require("node-cron");
 const axios = require("axios");
-
+const timeRoutes = require("./routes/timeRoutes");
 
 dotenv.config();
 
@@ -25,6 +25,9 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api", emailRoutes);
 app.use("/api/login-logs", require("./routes/logs"));
+app.use("/api/time", timeRoutes);
+app.use("/api/time", require("./routes/timeRoutes"));
+
 
 
 connectDB();
