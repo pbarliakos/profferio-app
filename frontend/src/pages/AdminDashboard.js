@@ -51,7 +51,8 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
   { label: "Alterlife", path: "/alterlife" },
   { label: "Nova", path: "/nova" },
   { label: "Agent Monitor", path: "/admin/AgentMonitor" },
-  { label: "Login Logs", path: "/admin/loginlogs"}
+  { label: "Login Logs", path: "/admin/loginlogs"},
+  {label: "Time Tracker", path: "/admin/timelogs"}
 ];
 
 useEffect(() => {

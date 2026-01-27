@@ -1,28 +1,40 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
+import axios from "axios";
 
+// Σελίδες
 import Login from "./pages/Login";
 import Alterlife from "./pages/Alterlife";
 import Other from "./pages/Other";
 import AdminDashboard from "./pages/AdminDashboard";
-import ProtectedRoute from "./components/ProtectedRoute";
 import Nova from "./pages/Nova";
-import LoginLogs from "./pages/admin/LoginLogs";
-import AgentMonitor from "./pages/admin/AgentMonitor";
-import axios from "axios";
-
-// ✅ NEW
 import MyTime from "./pages/MyTime";
 
+// Admin Σελίδες
+import AdminTimeLogs from "./pages/admin/AdminTimeLogs";
+import LoginLogs from "./pages/admin/LoginLogs";
+import AgentMonitor from "./pages/admin/AgentMonitor";
+
+// Components
+import ProtectedRoute from "./components/ProtectedRoute";
+
 function App() {
-  const [darkMode, setDarkMode] = useState(false);
+  // ✅ Φόρτωση του theme: Default σε "dark" αν δεν υπάρχει στο localStorage
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem("theme");
+    return savedTheme ? savedTheme === "dark" : true; // true = dark mode by default
+  });
+
+  // ✅ Αποθήκευση της προτίμησης theme
+  useEffect(() => {
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   // ✅ Καταγραφή logout όταν κλείνει το tab
   useEffect(() => {
     const rawUser = localStorage.getItem("user");
     if (!rawUser) return;
-
     const user = JSON.parse(rawUser);
     if (!user?._id) return;
 
@@ -36,11 +48,10 @@ function App() {
     return () => window.removeEventListener("beforeunload", handleUnload);
   }, []);
 
-  // ✅ Heartbeat timer για real-time monitoring
+  // ✅ Heartbeat timer
   useEffect(() => {
     const rawUser = localStorage.getItem("user");
     if (!rawUser) return;
-
     const user = JSON.parse(rawUser);
     if (!user?._id) return;
 
@@ -64,42 +75,34 @@ function App() {
       <CssBaseline />
       <Router>
         <Routes>
-          <Route path="/" element={<Login />} />
+          {/* ✅ ΕΔΩ ΠΕΡΝΑΜΕ ΤΑ PROPS ΣΤΟ LOGIN ΓΙΑ ΝΑ ΛΕΙΤΟΥΡΓΕΙ ΤΟ ΚΟΥΜΠΙ */}
+          <Route path="/" element={<Login darkMode={darkMode} setDarkMode={setDarkMode} />} />
 
-          {/* Admin Dashboard */}
+          {/* 🛡️ Admin Protected Routes */}
           <Route element={<ProtectedRoute allowedRole="admin" />}>
             <Route path="/admin" element={<AdminDashboard darkMode={darkMode} setDarkMode={setDarkMode} />} />
+            <Route path="/admin/timelogs" element={<AdminTimeLogs darkMode={darkMode} setDarkMode={setDarkMode} />} />
+            <Route path="/admin/loginlogs" element={<LoginLogs darkMode={darkMode} />} />
+            <Route path="/admin/AgentMonitor" element={<AgentMonitor darkMode={darkMode} />} />
           </Route>
 
-          {/* Time Project */}
+          {/* 🛡️ Time Project Route */}
           <Route element={<ProtectedRoute allowedProject="time" />}>
-            <Route path="/my-time" element={<MyTime />} />
+            <Route path="/my-time" element={<MyTime darkMode={darkMode} setDarkMode={setDarkMode} />} />
           </Route>
 
-          {/* Alterlife */}
           <Route element={<ProtectedRoute allowedProject="alterlife" />}>
             <Route path="/alterlife" element={<Alterlife />} />
           </Route>
 
-          {/* Nova */}
           <Route element={<ProtectedRoute allowedProject="nova" />}>
             <Route path="/nova" element={<Nova />} />
           </Route>
 
-          {/* Login Logs */}
-          <Route element={<ProtectedRoute allowedProject="admin" />}>
-            <Route path="/admin/loginlogs" element={<LoginLogs />} />
-          </Route>
-
-          {/* Agent Monitor */}
-          <Route element={<ProtectedRoute allowedProject="admin" />}>
-            <Route path="/admin/AgentMonitor" element={<AgentMonitor />} />
-          </Route>
-
-          {/* Other */}
           <Route element={<ProtectedRoute allowedProject="other" />}>
             <Route path="/other" element={<Other />} />
           </Route>
+
         </Routes>
       </Router>
     </ThemeProvider>
