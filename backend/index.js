@@ -14,41 +14,39 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// ✅ Δυναμικό CORS βάσει του .env
 app.use(cors({
   origin: [
-    "http://profferio.othisisa.gr",
-    "http://profferio.othisisa.gr:3000"
-    //"http://localhost:3000"
+    process.env.FRONTEND_URL,
+    `${process.env.FRONTEND_URL}:3000`, // Για development
+    "http://localhost:3000"
   ]
 }));
+
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api", emailRoutes);
 app.use("/api/login-logs", require("./routes/logs"));
-app.use("/api/time", require("./routes/timeRoutes"));
+app.use("/api/time", timeRoutes);
+app.use("/api/users", userRoutes);
 
-
-
+// Σύνδεση στη βάση (χρησιμοποιεί το process.env.MONGO_URI αυτόματα)
 connectDB();
 
-
 app.get("/", (req, res) => {
-  res.send("Profferio backend is running");
+  res.send(`Profferio backend is running on ${process.env.FRONTEND_URL}`);
 });
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server started on port ${PORT}`);
-})
+});
 
-app.use("/api/users", userRoutes);
-
-
+// ✅ Δυναμικό Cron - Χρησιμοποιούμε localhost για να αποφύγουμε 502/Proxy errors
 cron.schedule("*/1 * * * * *", async () => {
-  // κάθε 1 sec
   try {
-    await axios.post("http://profferio.othisisa.gr/api/auth/force-close-inactive-sessions");
-   // console.log("Checked and closed inactive sessions");
+    // Καλούμε το API εσωτερικά στον εαυτό του
+    await axios.post(`${process.env.INTERNAL_API_URL}/api/auth/force-close-inactive-sessions`);
   } catch (err) {
-    console.log("Cron error", err.message);
+    console.log("Cron error:", err.message);
   }
 });

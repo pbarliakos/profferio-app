@@ -19,6 +19,8 @@ import AgentMonitor from "./pages/admin/AgentMonitor";
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
 
+axios.defaults.baseURL = process.env.REACT_APP_API_URL;
+
 function App() {
   // ✅ Φόρτωση του theme: Default σε "dark" αν δεν υπάρχει στο localStorage
   const [darkMode, setDarkMode] = useState(() => {
