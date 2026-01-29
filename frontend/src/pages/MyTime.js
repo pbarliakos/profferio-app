@@ -37,12 +37,16 @@ const MyTime = ({ darkMode, setDarkMode }) => {
   const userInfo = JSON.parse(localStorage.getItem("user")) || {};
   const { fullName, role } = userInfo;
 
-  const api = useMemo(() => {
-    const instance = axios.create({ baseURL: "" });
+    const api = useMemo(() => {
+    // Διαβάζει το URL από το .env (π.χ. http://profferio.othisisa.gr:5000)
+    const instance = axios.create({ 
+        baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000" 
+    });
+    
     const token = localStorage.getItem("token");
     if (token) instance.defaults.headers.common.Authorization = `Bearer ${token}`;
     return instance;
-  }, []);
+    }, []);
 
   // Ανάκτηση τρέχουσας ημέρας
   const refreshCurrentDay = useCallback(async () => {
@@ -109,16 +113,17 @@ const MyTime = ({ darkMode, setDarkMode }) => {
     }
   };
 
-  const handleLogout = async () => {
+    const handleLogout = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (token) await axios.post("/api/auth/logout", {}, { headers: { Authorization: `Bearer ${token}` } });
-    } catch (err) { console.error(err); }
-    finally {
-      localStorage.clear();
-      navigate("/");
+        // ✅ Χρησιμοποιούμε το instance 'api' για να πάρει αυτόματα το σωστό URL και Token
+        await api.post("/api/auth/logout");
+    } catch (err) { 
+        console.error("Logout error", err); 
+    } finally {
+        localStorage.clear();
+        navigate("/");
     }
-  };
+    };
 
   // Ορισμός Στηλών DataGrid
   const columns = [
@@ -237,7 +242,7 @@ const MyTime = ({ darkMode, setDarkMode }) => {
             columns={columns}
             getRowId={(row) => row._id}
             loading={historyLoading}
-            pageSizeOptions={[50, 100]}
+            pageSizeOptions={[31, 50, 100]}
             initialState={{
               pagination: { paginationModel: { pageSize: 31 } },
             }}

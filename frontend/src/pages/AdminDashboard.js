@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback  } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Box,
   Button,
@@ -11,24 +11,25 @@ import {
   IconButton,
   Tooltip,
   Snackbar,
+  MenuItem,
+  Paper,
+  Stack,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { Delete, Edit, Add, Logout } from "@mui/icons-material";
+import { Delete, Edit, Add, Logout, OpenInNew as OpenInNewIcon, People as PeopleIcon, Groups as GroupsIcon, Workspaces as WorkspacesIcon, LightMode as LightModeIcon, DarkMode as DarkModeIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import MenuItem from '@mui/material/MenuItem';
-import PeopleIcon from "@mui/icons-material/People";
-import GroupsIcon from "@mui/icons-material/Groups";
-import WorkspacesIcon from "@mui/icons-material/Workspaces";
-import Paper from "@mui/material/Paper";
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import Stack from "@mui/material/Stack";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
+// Σταθερά δεδομένα εκτός component για αποφυγή περιττών renders
+const projectButtons = [
+  { label: "Alterlife", path: "/alterlife" },
+  { label: "Nova", path: "/nova" },
+  { label: "Agent Monitor", path: "/admin/AgentMonitor" },
+  { label: "Login Logs", path: "/admin/loginlogs" },
+  { label: "Time Tracker", path: "/admin/timelogs" }
+];
 
 const AdminDashboard = ({ darkMode, setDarkMode }) => {
-
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
   const [newUser, setNewUser] = useState({
@@ -42,41 +43,54 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [search, setSearch] = useState("");
   const [snackbar, setSnackbar] = useState("");
+  
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const userInfo = JSON.parse(localStorage.getItem("user")) || {};
-  const {fullName,role} = userInfo;
+  const { fullName, role } = userInfo;
 
-  const projectButtons = [
-  { label: "Alterlife", path: "/alterlife" },
-  { label: "Nova", path: "/nova" },
-  { label: "Agent Monitor", path: "/admin/AgentMonitor" },
-  { label: "Login Logs", path: "/admin/loginlogs"},
-  {label: "Time Tracker", path: "/admin/timelogs"}
-];
+  // ✅ Fetch Users - Σταθερή συνάρτηση
+  const fetchUsers = useCallback(async () => {
+    try {
+      const res = await axios.get("/api/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUsers(res.data);
+    } catch (err) {
+      console.error("Error fetching users", err);
+    }
+  }, [token]);
 
-useEffect(() => {
-  const fetchUsers = async () => {
-    const res = await axios.get("/api/users", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setUsers(res.data);
-  };
-  fetchUsers();
-}, [token]);
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
-  const fetchUsers = async () => {
-    const res = await axios.get("/api/users", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setUsers(res.data);
-  };
+  // ✅ 1. Υπολογισμός Στατιστικών με useMemo (Υπολογίζεται ΜΟΝΟ όταν αλλάζει η λίστα users)
+  const stats = useMemo(() => {
+    const total = users.length;
+    const projects = users.reduce((acc, user) => {
+      acc[user.project] = (acc[user.project] || 0) + 1;
+      return acc;
+    }, {});
+    const roles = users.reduce((acc, user) => {
+      acc[user.role] = (acc[user.role] || 0) + 1;
+      return acc;
+    }, {});
+    return { total, projects, roles };
+  }, [users]);
 
-  const handleEdit = (user) => {
+  // ✅ 2. Φιλτράρισμα Χρηστών με useMemo (Δεν "κολλάει" την πληκτρολόγηση στη φόρμα)
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) =>
+      `${u.username} ${u.fullName} ${u.email}`.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [users, search]);
+
+  const handleEdit = useCallback((user) => {
     setEditingUser(user);
     setNewUser({ ...user, password: "" });
     setOpenDialog(true);
-  };
+  }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Σίγουρα θες να διαγράψεις τον χρήστη;")) return;
@@ -88,47 +102,60 @@ useEffect(() => {
   };
 
   const handleSave = async () => {
-    if (editingUser) {
-      await axios.put(`/api/users/${editingUser._id}`, newUser, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSnackbar("Ο χρήστης ενημερώθηκε");
-    } else {
-      await axios.post("/api/users", newUser, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setSnackbar("Ο χρήστης δημιουργήθηκε");
+    try {
+      if (editingUser) {
+        await axios.put(`/api/users/${editingUser._id}`, newUser, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSnackbar("Ο χρήστης ενημερώθηκε");
+      } else {
+        await axios.post("/api/users", newUser, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSnackbar("Ο χρήστης δημιουργήθηκε");
+      }
+      setOpenDialog(false);
+      fetchUsers();
+    } catch (err) {
+      setSnackbar("Σφάλμα κατά την αποθήκευση");
     }
-
-    setOpenDialog(false);
-    fetchUsers();
   };
 
-const handleLogout = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    if (token) {
-      await axios.post("/api/auth/logout", {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log("✅ Logout recorded on server");
+  const handleLogout = async () => {
+    try {
+      if (token) {
+        await axios.post("/api/auth/logout", {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+    } catch (err) {
+      console.error("Logout API failed", err);
+    } finally {
+      localStorage.clear();
+      navigate("/");
     }
-  } catch (err) {
-    console.error("❌ Logout API failed", err);
-  } finally {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/");
-  }
-};
+  };
 
-  const filteredUsers = users.filter((u) =>
-    `${u.username} ${u.fullName} ${u.email}`.toLowerCase().includes(search.toLowerCase())
-  );
+  const handleExport = () => {
+    if (!users.length) return;
+    const headers = ["Full Name", "Username", "Email", "Role", "Project"];
+    const rows = users.map(u => [u.fullName, u.username, u.email, u.role, u.project]);
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(r => r.map(field => `"${field}"`).join(","))
+    ].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "users_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-  const columns = [
+  // ✅ 3. Ορισμός Στηλών με useMemo (Σταθερότητα DataGrid)
+  const columns = useMemo(() => [
     { field: "fullName", headerName: "Ονοματεπώνυμο", flex: 1 },
     { field: "username", headerName: "Username", flex: 1 },
     { field: "email", headerName: "Email", flex: 1 },
@@ -138,274 +165,95 @@ const handleLogout = async () => {
       field: "actions",
       headerName: "Ενέργειες",
       renderCell: (params) => (
-        <>
+        <Box>
           <Tooltip title="Edit">
-            <IconButton onClick={() => handleEdit(params.row)}>
-              <Edit />
-            </IconButton>
+            <IconButton onClick={() => handleEdit(params.row)}><Edit /></IconButton>
           </Tooltip>
           <Tooltip title="Delete">
-            <IconButton onClick={() => handleDelete(params.row._id)}>
-              <Delete />
-            </IconButton>
+            <IconButton onClick={() => handleDelete(params.row._id)}><Delete /></IconButton>
           </Tooltip>
-        </>
+        </Box>
       ),
       width: 150,
     },
-  ];
-
-const getUserStats = () => {
-  const total = users.length;
-
-  const projects = users.reduce((acc, user) => {
-    acc[user.project] = (acc[user.project] || 0) + 1;
-    return acc;
-  }, {});
-
-  const roles = users.reduce((acc, user) => {
-    acc[user.role] = (acc[user.role] || 0) + 1;
-    return acc;
-  }, {});
-
-  return { total, projects, roles };
-};
-
-const { total, projects, roles } = getUserStats();
-
-
-const handleExport = () => {
-  if (!users.length) return;
-
-  const headers = ["Full Name", "Username", "Email", "Role", "Project"];
-  const rows = users.map(u => [
-    u.fullName,
-    u.username,
-    u.email,
-    u.role,
-    u.project
-  ]);
-
-  const csvContent = [
-    headers.join(","),
-    ...rows.map(r => r.map(field => `"${field}"`).join(","))
-  ].join("\n");
-
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement("a");
-  link.href = url;
-  link.setAttribute("download", "users_export.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+  ], [handleEdit]);
 
   return (
     <Box p={4}>
-<Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-  <Typography variant="h4">Admin Dashboard</Typography>
-  {role === "admin" && (
-  <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 3 }}>
-    {projectButtons.map((btn) => (
-      <Button
-        key={btn.path}
-        variant="outlined"
-        size="medium"
-        endIcon={<OpenInNewIcon />}
-        onClick={() => window.open(btn.path, "_blank")}
-      >
-        {btn.label}
-      </Button>
-    ))}
-  </Stack>
-)}
-
-<Box display="flex" gap={2} alignItems="center">
-  <Box textAlign="right">
-    <Typography variant="caption" color="text.secondary">{fullName} | {role}</Typography>
-  </Box>
-
-  <Button
-    variant="outlined"
-    startIcon={darkMode ? <LightModeIcon /> : <DarkModeIcon />}
-    onClick={() => setDarkMode(!darkMode)}
-  >
-    {darkMode ? "Light" : "Dark"}
-  </Button>
-
-  <Button
-    variant="outlined"
-    startIcon={<Logout />}
-    color="error"
-    onClick={handleLogout}
-  >
-    Logout
-  </Button>
-</Box>
-
-</Box>
-
-      <Box display="flex" gap={2} flexWrap="wrap" mb={4}>
-  {/* Total Users */}
-  <Paper
-    sx={{
-      flex: 1,
-      minWidth: 220,
-      p: 3,
-      display: "flex",
-      alignItems: "center",
-      gap: 2,
-      bgcolor: "#e3f2fd",
-      borderRadius: 2,
-    }}
-    elevation={3}
-  >
-    <PeopleIcon color="primary" sx={{ fontSize: 40 }} />
-    <Box>
-      <Typography variant="subtitle2" color="#525252">
-        Σύνολο Χρηστών
-      </Typography>
-      <Typography variant="h5" color="#000000">{total}</Typography>
-    </Box>
-  </Paper>
-
-  {/* Users per Project */}
-  <Paper
-    sx={{
-      flex: 1,
-      minWidth: 220,
-      p: 3,
-      display: "flex",
-      alignItems: "center",
-      gap: 2,
-      bgcolor: "#f3e5f5",
-      borderRadius: 2,
-    }}
-    elevation={3}
-  >
-    <WorkspacesIcon color="secondary" sx={{ fontSize: 40 }} />
-    <Box>
-      <Typography variant="subtitle2" color="#525252">
-        Χρήστες ανά Project
-      </Typography>
-      {Object.entries(projects).map(([key, val]) => (
-        <Typography key={key} variant="body2" color="#000000">
-          {key}: {val}
-        </Typography>
-      ))}
-    </Box>
-  </Paper>
-
-  {/* Users per Role */}
-  <Paper
-    sx={{
-      flex: 1,
-      minWidth: 220,
-      p: 3,
-      display: "flex",
-      alignItems: "center",
-      gap: 2,
-      bgcolor: "#e8f5e9",
-      borderRadius: 2,
-    }}
-    elevation={3}
-  >
-    <GroupsIcon color="success" sx={{ fontSize: 40 }} />
-    <Box>
-      <Typography variant="subtitle2" color="#525252">
-        Χρήστες ανά Ρόλο
-      </Typography>
-      {Object.entries(roles).map(([key, val]) => (
-        <Typography key={key} variant="body2" color="#000000">
-          {key}: {val}
-        </Typography>
-      ))}
-    </Box>
-  </Paper>
-</Box>
-
-
-      <Box display="flex" justifyContent="space-between" mb={2}>
-        <TextField
-          label="Αναζήτηση"
-          fullWidth
-          margin="normal"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => {
-            setEditingUser(null);
-            setNewUser({
-              fullName: "",
-              username: "",
-              email: "",
-              password: "",
-              role: "user",
-              project: "alterlife",
-            });
-            setOpenDialog(true);
-          }}
-          sx={{ ml: 2, mt: 2, height: "55px" }}
-        >
-          Νεος Χρηστης
-        </Button>
-        <Button
-            variant="outlined"
-            onClick={handleExport}
-            sx={{ ml: 2, mt: 2, height: "55px" }}
-            >
-            Export Users
-        </Button>
+      {/* HEADER SECTION */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Typography variant="h4" fontWeight={800}>Admin Dashboard</Typography>
+        {role === "admin" && (
+          <Stack direction="row" spacing={2}>
+            {projectButtons.map((btn) => (
+              <Button key={btn.path} variant="outlined" size="small" endIcon={<OpenInNewIcon />} onClick={() => window.open(btn.path, "_blank")}>
+                {btn.label}
+              </Button>
+            ))}
+          </Stack>
+        )}
+        <Box display="flex" gap={2} alignItems="center">
+          <Typography variant="caption" color="text.secondary">{fullName} | {role}</Typography>
+          <Button variant="outlined" startIcon={darkMode ? <LightModeIcon /> : <DarkModeIcon />} onClick={() => setDarkMode(!darkMode)}>
+            {darkMode ? "Light" : "Dark"}
+          </Button>
+          <Button variant="outlined" startIcon={<Logout />} color="error" onClick={handleLogout}>Logout</Button>
+        </Box>
       </Box>
 
-      <DataGrid
-        rows={filteredUsers}
-        columns={columns}
-        getRowId={(row) => row._id}
-        autoHeight
-        disableRowSelectionOnClick
-      />
+      {/* STATS SECTION - 144 Users Performance Optimized */}
+      <Box display="flex" gap={2} flexWrap="wrap" mb={4}>
+        <StatCard title="Σύνολο Χρηστών" value={stats.total} icon={<PeopleIcon color="primary" />} bgcolor="#e3f2fd" />
+        <StatCard title="Χρήστες ανά Project" 
+          value={Object.entries(stats.projects).map(([k, v]) => `${k}: ${v}`).join(", ")} 
+          icon={<WorkspacesIcon color="secondary" />} bgcolor="#f3e5f5" />
+        <StatCard title="Χρήστες ανά Ρόλο" 
+          value={Object.entries(stats.roles).map(([k, v]) => `${k}: ${v}`).join(", ")} 
+          icon={<GroupsIcon color="success" />} bgcolor="#e8f5e9" />
+      </Box>
 
-      {/* Dialog Create/Edit */}
+      {/* CONTROLS SECTION */}
+      <Box display="flex" gap={2} mb={2}>
+        <TextField label="Αναζήτηση" fullWidth value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Button variant="contained" startIcon={<Add />} onClick={() => { setEditingUser(null); setNewUser({ fullName: "", username: "", email: "", password: "", role: "user", project: "alterlife" }); setOpenDialog(true); }} sx={{ minWidth: 180 }}>
+          Νεος Χρηστης
+        </Button>
+        <Button variant="outlined" onClick={handleExport} sx={{ minWidth: 150 }}>Export Users</Button>
+      </Box>
+
+      {/* DATAGRID - Performance Fix */}
+      <Box sx={{ width: '100%' }}>
+        <DataGrid
+          rows={filteredUsers}
+          columns={columns}
+          getRowId={(row) => row._id}
+          autoHeight
+          pageSizeOptions={[10, 25, 50, 100]}
+          initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
+          disableRowSelectionOnClick
+        />
+      </Box>
+
+      {/* DIALOG CREATE/EDIT - Accessibility Fix (id added) */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{editingUser ? "Επεξεργασία Χρήστη" : "Νέος Χρήστης"}</DialogTitle>
         <DialogContent>
-          <TextField label="Ονοματεπώνυμο" fullWidth margin="dense" value={newUser.fullName} onChange={(e) => setNewUser({ ...newUser, fullName: e.target.value })} />
-          <TextField label="Username" fullWidth margin="dense" value={newUser.username} onChange={(e) => setNewUser({ ...newUser, username: e.target.value })} />
-          <TextField label="Email" fullWidth margin="dense" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
-          <TextField label="Password" fullWidth margin="dense" type="password" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} />
-          <TextField
-        select
-        label="Ρόλος"
-        fullWidth
-        margin="dense"
-        value={newUser.role}
-        onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-        >
-        <MenuItem value="admin">Admin</MenuItem>
-        <MenuItem value="manager">Manager</MenuItem>
-        <MenuItem value="user">User</MenuItem>
-        </TextField>
-
-        <TextField
-        select
-        label="Project"
-        fullWidth
-        margin="dense"
-        value={newUser.project}
-        onChange={(e) => setNewUser({ ...newUser, project: e.target.value })}
-        >
-        <MenuItem value="alterlife">Alterlife</MenuItem>
-        <MenuItem value="nova">Nova</MenuItem>
-        <MenuItem value="admin">Admin</MenuItem>
-        <MenuItem value="time">TimeTrack</MenuItem>
-        <MenuItem value="other">Other</MenuItem>
-        </TextField>
+          <TextField id="fullName" label="Ονοματεπώνυμο" fullWidth margin="dense" value={newUser.fullName} onChange={(e) => setNewUser({ ...newUser, fullName: e.target.value })} />
+          <TextField id="username" label="Username" fullWidth margin="dense" value={newUser.username} onChange={(e) => setNewUser({ ...newUser, username: e.target.value })} />
+          <TextField id="email" label="Email" fullWidth margin="dense" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
+          <TextField id="password" label="Password" fullWidth margin="dense" type="password" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} />
+          <TextField select label="Ρόλος" fullWidth margin="dense" value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}>
+            <MenuItem value="admin">Admin</MenuItem>
+            <MenuItem value="manager">Manager</MenuItem>
+            <MenuItem value="user">User</MenuItem>
+          </TextField>
+          <TextField select label="Project" fullWidth margin="dense" value={newUser.project} onChange={(e) => setNewUser({ ...newUser, project: e.target.value })}>
+            <MenuItem value="alterlife">Alterlife</MenuItem>
+            <MenuItem value="nova">Nova</MenuItem>
+            <MenuItem value="admin">Admin</MenuItem>
+            <MenuItem value="time">TimeTrack</MenuItem>
+            <MenuItem value="other">Other</MenuItem>
+          </TextField>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>Άκυρο</Button>
@@ -413,15 +261,20 @@ const handleExport = () => {
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={!!snackbar}
-        autoHideDuration={3000}
-        message={snackbar}
-        onClose={() => setSnackbar("")}
-      />
+      <Snackbar open={!!snackbar} autoHideDuration={3000} message={snackbar} onClose={() => setSnackbar("")} />
     </Box>
-
   );
 };
+
+// Helper Component για τα Stats Cards
+const StatCard = ({ title, value, icon, bgcolor }) => (
+  <Paper sx={{ flex: 1, minWidth: 220, p: 3, display: "flex", alignItems: "center", gap: 2, bgcolor, borderRadius: 2 }} elevation={3}>
+    {icon}
+    <Box>
+      <Typography variant="subtitle2" color="#525252">{title}</Typography>
+      <Typography variant="body2" fontWeight={700} color="#000">{value}</Typography>
+    </Box>
+  </Paper>
+);
 
 export default AdminDashboard;
