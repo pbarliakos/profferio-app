@@ -95,7 +95,7 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
     const headers = ["Ημερομηνία", "Χρήστης", "Έναρξη", "Λήξη", "Σύνολο", "Εργασία", "Διάλειμμα", "Status"];
     const rows = logs.map(log => [
       log.dateKey,
-      log.userId?.fullName || "N/A",
+      log.userId?.fullName || log.userFullName || "Deleted User",
       log.firstLoginAt ? dayjs(log.firstLoginAt).format("HH:mm:ss") : "-",
       log.lastLogoutAt ? dayjs(log.lastLogoutAt).format("HH:mm:ss") : "-",
       msToHHMMSS(log.workingMs + log.breakMs),
@@ -162,7 +162,7 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
           <Button startIcon={<ArrowBack />} onClick={() => navigate("/admin")} sx={{ fontWeight: 600 }}>
             DASHBOARD
           </Button>
-          <Typography variant="h4" fontWeight={800}>Team Logs</Typography>
+          <Typography variant="h4" fontWeight={800}>Time Logs</Typography>
         </Stack>
         <Stack direction="row" spacing={2} alignItems="center">
           <Typography variant="body2" sx={{ opacity: 0.8 }}>
@@ -222,7 +222,7 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
           initialState={{ pagination: { paginationModel: { pageSize: 100 } } }}
           columns={[
             { field: "dateKey", headerName: "Ημερομηνία", width: 110 },
-            { field: "user", headerName: "Χρήστης", flex: 1, valueGetter: (params, row) => row?.userId?.fullName || "N/A" },
+            { field: "user", headerName: "Χρήστης", flex: 1, valueGetter: (params, row) => {return row?.userId?.fullName || row?.userFullName || "Διεγραμμένος Χρήστης";}},
             // ✅ Νέες Στήλες
             { field: "firstLogin", headerName: "Έναρξη", width: 90, renderCell: (p) => p.row.firstLoginAt ? dayjs(p.row.firstLoginAt).format("HH:mm") : "-" },
             { field: "lastLogout", headerName: "Λήξη", width: 90, renderCell: (p) => p.row.lastLogoutAt ? dayjs(p.row.lastLogoutAt).format("HH:mm") : "-" },

@@ -76,18 +76,19 @@ exports.login = async (req, res) => {
     });
 
     // ✅ Time Tracking Fix: Αρχικοποίηση με status: "CLOSED"
-    const dateKey = DateTime.fromJSDate(now).setZone(TZ).toFormat("yyyy-LL-dd");
+const dateKey = DateTime.fromJSDate(now).setZone(TZ).toFormat("yyyy-LL-dd");
 
     await TimeDaily.findOneAndUpdate(
       { userId: user._id, dateKey },
       {
         $setOnInsert: {
           userId: user._id,
+          userFullName: user.fullName, // 👈 ΝΕΟ: Αποθηκεύουμε το όνομα εδώ
           dateKey,
-          firstLoginAt: now,
-          status: "CLOSED", // 👈 ΑΥΤΟ ΗΤΑΝ ΤΟ ΠΡΟΒΛΗΜΑ (ήταν "open")
-          storedWorkMs: 0,  // 👈 ΝΕΟ ΠΕΔΙΟ
-          storedBreakMs: 0, // 👈 ΝΕΟ ΠΕΔΙΟ
+          firstLoginAt: null,
+          status: "CLOSED",
+          storedWorkMs: 0,
+          storedBreakMs: 0,
           lastLogoutAt: null,
           lastActionAt: null
         }
