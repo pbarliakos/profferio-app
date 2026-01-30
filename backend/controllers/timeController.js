@@ -1,4 +1,5 @@
 const TimeDaily = require("../models/TimeDaily");
+const User = require("../models/User"); // Χρειαζόμαστε το User model για τα φίλτρα
 const { DateTime } = require("luxon");
 
 const TZ = "Europe/Athens";
@@ -11,7 +12,6 @@ const getTodayDoc = async (userId) => {
   let doc = await TimeDaily.findOne({ userId, dateKey });
   
   if (!doc) {
-    // Δημιουργία νέας εγγραφής στη μνήμη (δεν σώζουμε ακόμα)
     doc = new TimeDaily({
       userId,
       dateKey,
@@ -24,15 +24,12 @@ const getTodayDoc = async (userId) => {
   return doc;
 };
 
-
 // GET: Φέρνει την κατάσταση της ημέρας
 exports.getTodayStatus = async (req, res) => {
   try {
-    // Το protect middleware βάζει το user στο req.user
     if (!req.user || !req.user._id) {
         return res.status(401).json({ error: "User not authenticated correctly" });
     }
-
     const doc = await getTodayDoc(req.user._id);
     res.json(doc);
   } catch (err) {
@@ -44,46 +41,37 @@ exports.getTodayStatus = async (req, res) => {
 // POST: Διαχειρίζεται τα κουμπιά (START, BREAK, RESUME, STOP)
 exports.handleAction = async (req, res) => {
   try {
-    const { action } = req.body; // "START", "BREAK", "RESUME", "STOP"
+    const { action } = req.body; 
     const userId = req.user._id;
     const now = new Date();
     
     let doc = await getTodayDoc(userId);
     
-    // Υπολογισμός χρόνου που πέρασε από την τελευταία ενέργεια
     let elapsed = 0;
     if (doc.lastActionAt) {
       elapsed = now.getTime() - new Date(doc.lastActionAt).getTime();
     }
 
-    // --- LOGIC ---
     if (action === "START") {
-      // Έναρξη ημέρας ή Επανανοιγμα
       doc.status = "WORKING";
       doc.lastActionAt = now;
       if (!doc.firstLoginAt) doc.firstLoginAt = now; 
     } 
-    
     else if (action === "BREAK") {
-      // Από Working σε Break
       if (doc.status === "WORKING") {
         doc.storedWorkMs += elapsed; 
         doc.status = "BREAK";
         doc.lastActionAt = now;
       }
     } 
-    
     else if (action === "RESUME") {
-      // Από Break σε Working
       if (doc.status === "BREAK") {
         doc.storedBreakMs += elapsed;
         doc.status = "WORKING";
         doc.lastActionAt = now;
       }
     } 
-    
     else if (action === "STOP") {
-      // Τέλος ημέρας (ή logout)
       if (doc.status === "WORKING") {
         doc.storedWorkMs += elapsed;
       } else if (doc.status === "BREAK") {
@@ -94,9 +82,7 @@ exports.handleAction = async (req, res) => {
       doc.lastActionAt = now; 
     }
 
-    // Προσθήκη στο log
     doc.logs.push({ action, timestamp: now });
-    
     await doc.save();
     res.json(doc);
 
@@ -106,10 +92,10 @@ exports.handleAction = async (req, res) => {
   }
 };
 
-// GET: Ιστορικό με φίλτρο μήνα
+// GET: Ιστορικό User
 exports.getHistory = async (req, res) => {
   try {
-    const { month } = req.query; // Format "YYYY-MM"
+    const { month } = req.query;
     const userId = req.user._id;
 
     const query = { userId };
@@ -125,70 +111,104 @@ exports.getHistory = async (req, res) => {
   }
 };
 
-// ... (τα υπόλοιπα imports και functions παραμένουν ως έχουν)
-const User = require("../models/User"); // Βεβαιώσου ότι έχεις κάνει import το User
-
 // --- ADMIN FUNCTIONS ---
 
-// 1. Λήψη όλων των χρηστών (για το dropdown)
 exports.getActiveUsers = async (req, res) => {
   try {
-    const users = await User.find({}, "fullName _id project").sort({ fullName: 1 });
+    const users = await User.find({}, "fullName _id project role company").sort({ fullName: 1 });
     res.json({ users });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// 2. Λήψη Logs με φίλτρα
 exports.getAllLogs = async (req, res) => {
   try {
-    const { startDate, endDate, userIds } = req.query;
+    const { startDate, endDate, userIds, roles, projects, companies } = req.query;
     
     let query = {};
 
-    // Φίλτρο Ημερομηνίας
+    // 1. Φίλτρο Ημερομηνίας
     if (startDate && endDate) {
        query.dateKey = { $gte: startDate, $lte: endDate };
     } else if (startDate) {
-       query.dateKey = { $gte: startDate }; // Από μια ημ/νια και μετά
+       query.dateKey = { $gte: startDate }; 
     } else {
-       // Default: Τρέχων μήνας αν δεν επιλέξει τίποτα (για να μην κρασάρει από όγκο δεδομένων)
+       // Default τρέχων μήνας
        const startOfMonth = DateTime.now().setZone(TZ).startOf('month').toFormat("yyyy-MM-dd");
        query.dateKey = { $gte: startOfMonth };
     }
 
-    // Φίλτρο Χρηστών
-    if (userIds && userIds !== "all") {
-      const idsArray = userIds.split(",");
-      query.userId = { $in: idsArray };
+    // 2. Σύνθετο Φίλτρο Χρηστών (Role, Project, Company)
+    // Πρέπει να βρούμε τα IDs των χρηστών που ταιριάζουν στα κριτήρια
+    let userCriteria = {};
+    let needsUserFilter = false;
+
+    if (roles && roles !== "all") {
+        userCriteria.role = { $in: roles.split(",") };
+        needsUserFilter = true;
+    }
+    if (projects && projects !== "all") {
+        userCriteria.project = { $in: projects.split(",") };
+        needsUserFilter = true;
+    }
+    if (companies && companies !== "all") {
+        userCriteria.company = { $in: companies.split(",") };
+        needsUserFilter = true;
     }
 
-    const logs = await TimeDaily.find(query)
-      .populate("userId", "fullName username role project")
-      .sort({ dateKey: -1 }); // Φθίνουσα ταξινόμηση (νεότερα πρώτα)
+    let allowedUserIds = [];
+    
+    // Αν έχουμε φίλτρα ιδιοτήτων, βρίσκουμε τα userIds
+    if (needsUserFilter) {
+        const matchingUsers = await User.find(userCriteria).select("_id");
+        allowedUserIds = matchingUsers.map(u => u._id);
+    }
 
-    // Υπολογισμός τελικών χρόνων (αν κάποιος είναι ακόμα Working, προσθέτουμε τον χρόνο που πέρασε)
+    // 3. Συνδυασμός με το φίλτρο συγκεκριμένων χρηστών (Dropdown Users)
+    if (userIds && userIds !== "all") {
+        const specificIds = userIds.split(",");
+        
+        if (needsUserFilter) {
+            // Τομή συνόλων: Πρέπει να είναι ΚΑΙ στη λίστα επιλογής ΚΑΙ να ταιριάζει στα φίλτρα
+            // (Εδώ κάνουμε απλά override: αν διάλεξε συγκεκριμένους χρήστες, συνήθως θέλει αυτούς)
+            // Αλλά για σωστό filtering ας πούμε ότι υπερισχύει το specific selection ή κάνουμε intersection.
+            // Απλοποίηση: Αν διαλέξει users, ψάχνουμε αυτούς. Αν όχι, ψάχνουμε τα allowedUserIds.
+            query.userId = { $in: specificIds };
+        } else {
+            query.userId = { $in: specificIds };
+        }
+    } else if (needsUserFilter) {
+        // Αν δεν διάλεξε συγκεκριμένους users αλλά έβαλε φίλτρα (π.χ. Role: Admin)
+        query.userId = { $in: allowedUserIds };
+    }
+
+
+    const logs = await TimeDaily.find(query)
+      .populate("userId", "fullName username role project company")
+      .sort({ dateKey: -1 });
+
+    // Υπολογισμός Live χρόνων
     const processedLogs = logs.map(doc => {
         const log = doc.toObject();
+        // Fallback αν σβήστηκε ο χρήστης, να μην σκάει
+        if (!log.userId) log.userId = {}; 
+
         if (log.status === "WORKING" && log.lastActionAt) {
              const now = new Date().getTime();
              const elapsed = now - new Date(log.lastActionAt).getTime();
-             log.workingMs = (log.storedWorkMs || 0) + elapsed; // Προσωρινός υπολογισμός για εμφάνιση
+             log.workingMs = (log.storedWorkMs || 0) + elapsed; 
              log.breakMs = log.storedBreakMs || 0;
-             log.totalPresenceMs = log.workingMs + log.breakMs;
         } else if (log.status === "BREAK" && log.lastActionAt) {
              const now = new Date().getTime();
              const elapsed = now - new Date(log.lastActionAt).getTime();
              log.workingMs = log.storedWorkMs || 0;
              log.breakMs = (log.storedBreakMs || 0) + elapsed;
-             log.totalPresenceMs = log.workingMs + log.breakMs;
         } else {
-             // Closed logs
              log.workingMs = log.storedWorkMs || 0;
              log.breakMs = log.storedBreakMs || 0;
-             log.totalPresenceMs = log.workingMs + log.breakMs;
         }
+        log.totalPresenceMs = log.workingMs + log.breakMs;
         return log;
     });
 
@@ -199,11 +219,9 @@ exports.getAllLogs = async (req, res) => {
   }
 };
 
-// 3. Update Log (Edit από Admin)
 exports.updateLog = async (req, res) => {
   try {
     const { id } = req.params;
-    // Προσθέσαμε τα firstLoginAt και lastLogoutAt
     const { status, storedWorkMs, storedBreakMs, dateKey, firstLoginAt, lastLogoutAt } = req.body;
 
     const log = await TimeDaily.findById(id);
@@ -214,11 +232,9 @@ exports.updateLog = async (req, res) => {
     log.storedBreakMs = storedBreakMs;
     log.dateKey = dateKey;
     
-    // ✅ Ενημέρωση των timestamps (αν υπάρχουν)
     if (firstLoginAt) log.firstLoginAt = new Date(firstLoginAt);
     if (lastLogoutAt) log.lastLogoutAt = new Date(lastLogoutAt);
 
-    // Αν γυρίσει σε CLOSED, κλείνουμε τα actions
     if (status === "CLOSED") {
         log.lastActionAt = new Date(); 
     }

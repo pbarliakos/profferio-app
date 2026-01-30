@@ -39,9 +39,17 @@ export default function Nova() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
   const [emailHistory, setEmailHistory] = useState([]);
+  
+  // ✅ 1. Theme Fix: Χρήση του κοινού κλειδιού "theme" για συγχρονισμό με το App
   const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem("nova_dark") === "true";
+    const savedTheme = localStorage.getItem("theme");
+    return savedTheme ? savedTheme === "dark" : true; 
   });
+
+  // ✅ Αποθήκευση της αλλαγής theme
+  useEffect(() => {
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
@@ -49,6 +57,15 @@ export default function Nova() {
   });
 
   const navigate = useNavigate();
+
+  // ✅ 2. Navigation Logic: Admin -> Admin Panel, Users -> User Dashboard
+  const handleBackNavigation = () => {
+    if (user?.role === "admin") {
+        navigate("/admin");
+    } else {
+        navigate("/dashboard");
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -148,13 +165,13 @@ export default function Nova() {
       
       <Box display="flex" justifyContent="space-between" alignItems="center" p={2} borderBottom="1px solid #ccc">
         <Box display="flex" alignItems="center" gap={2}>
-            {/* ✅ Back Button */}
+            {/* ✅ Το κουμπί επιστροφής με τη νέα λογική */}
             <Button 
                 startIcon={<ArrowBack />} 
-                onClick={() => navigate("/dashboard")}
+                onClick={handleBackNavigation}
                 sx={{ mr: 1 }}
             >
-                Dashboard
+                {user?.role === "admin" ? "Back to Admin" : "Back to Dashboard"}
             </Button>
             <Typography variant="h6">Project Nova</Typography>
         </Box>

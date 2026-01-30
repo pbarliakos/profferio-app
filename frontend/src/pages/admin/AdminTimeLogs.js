@@ -5,12 +5,35 @@ import {
   IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Grid
 } from "@mui/material";
 import { 
-  DarkMode, LightMode, Logout, ArrowBack, FileDownload, Edit 
+  DarkMode, LightMode, Logout, ArrowBack, FileDownload, Edit, FilterList
 } from "@mui/icons-material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import dayjs from "dayjs";
+
+// ✅ Imports για το DatePicker (DD/MM/YYYY)
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import "dayjs/locale/el"; 
+
+// --- STATIC LISTS ---
+const ALL_ROLES = ["admin", "manager", "user", "Backoffice", "Team Leader"];
+const ALL_PROJECTS = ["alterlife", "nova", "admin", "time", "other", "Epic", "Instacar", "Nova FTTH"];
+const ALL_COMPANIES = ["Othisi", "Infovest", "Infosale", "Korcavest", "Gemini", "Kontakt"];
+
+// ✅ Ρυθμίσεις για το ύψος και πλάτος του Dropdown menu
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 400, // Αυξήσαμε το πλάτος της λίστας για να χωράνε τα ονόματα
+    },
+  },
+};
 
 // --- HELPERS ---
 const msToHHMMSS = (ms) => {
@@ -43,9 +66,14 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  // Filters State
+  const [startDate, setStartDate] = useState(null); 
+  const [endDate, setEndDate] = useState(null);     
+  
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [selectedRoles, setSelectedRoles] = useState([]);
+  const [selectedProjects, setSelectedProjects] = useState([]);
+  const [selectedCompanies, setSelectedCompanies] = useState([]);
 
   // Edit Modal State
   const [editOpen, setEditOpen] = useState(false);
@@ -78,11 +106,27 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
     setLoading(true);
     try {
       const uParam = selectedUsers.length === 0 ? "all" : selectedUsers.join(",");
-      const res = await axios.get(`/api/time/admin/logs?startDate=${startDate}&endDate=${endDate}&userIds=${uParam}`);
+      const rParam = selectedRoles.length === 0 ? "all" : selectedRoles.join(",");
+      const pParam = selectedProjects.length === 0 ? "all" : selectedProjects.join(",");
+      const cParam = selectedCompanies.length === 0 ? "all" : selectedCompanies.join(",");
+
+      const startStr = startDate ? dayjs(startDate).format("YYYY-MM-DD") : "";
+      const endStr = endDate ? dayjs(endDate).format("YYYY-MM-DD") : "";
+
+      const query = new URLSearchParams({
+          startDate: startStr,
+          endDate: endStr,
+          userIds: uParam,
+          roles: rParam,
+          projects: pParam,
+          companies: cParam
+      }).toString();
+
+      const res = await axios.get(`/api/time/admin/logs?${query}`);
       setLogs(res.data.logs || []);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
-  }, [startDate, endDate, selectedUsers]);
+  }, [startDate, endDate, selectedUsers, selectedRoles, selectedProjects, selectedCompanies]);
 
   useEffect(() => {
      fetchActiveUsers();
@@ -91,12 +135,10 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
 
   const handleExportCSV = () => {
     if (logs.length === 0) return;
-    // ✅ Προσθήκη Company στα Headers
     const headers = ["Ημερομηνία", "Χρήστης", "Εταιρεία", "Ρόλος", "Project", "Έναρξη", "Λήξη", "Σύνολο", "Εργασία", "Διάλειμμα", "Status"];
     const rows = logs.map(log => [
       log.dateKey,
       log.userId?.fullName || log.userFullName || "Deleted User",
-      // ✅ Προσθήκη Company (Προτεραιότητα στο snapshot του log, μετά στο user profile)
       log.userCompany || log.userId?.company || "-", 
       log.userId?.role || "-",
       log.userId?.project || "-",
@@ -115,12 +157,12 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
     link.click();
   };
 
-  const handleSelectChange = (event) => {
+  const handleMultiSelectChange = (event, setter) => {
     const { value } = event.target;
     if (value.includes("everyone")) {
-      setSelectedUsers([]);
+      setter([]); 
     } else {
-      setSelectedUsers(typeof value === 'string' ? value.split(',') : value);
+      setter(typeof value === 'string' ? value.split(',') : value);
     }
   };
 
@@ -183,37 +225,177 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
         </Stack>
       </Box>
 
-      {/* FILTERS */}
+      {/* FILTERS PANEL */}
       <Paper sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" flexWrap="wrap" useFlexGap>
-          <Stack direction="row" spacing={2} sx={{ mb: { xs: 2, md: 0 } }}>
-            <TextField type="date" label="Από" InputLabelProps={{ shrink: true }} size="small" value={startDate} onChange={e => setStartDate(e.target.value)} />
-            <TextField type="date" label="Έως" InputLabelProps={{ shrink: true }} size="small" value={endDate} onChange={e => setEndDate(e.target.value)} />
-            
-            <FormControl sx={{ minWidth: 200 }} size="small">
-              <InputLabel>Χρήστες</InputLabel>
-              <Select
-                multiple
-                value={selectedUsers}
-                onChange={handleSelectChange}
-                input={<OutlinedInput label="Χρήστες" />}
-                renderValue={(selected) => selected.length === 0 ? "Everyone" : users.filter(u => selected.includes(u._id)).map(u => u.fullName).join(", ")}
-              >
-                <MenuItem value="everyone"><ListItemText primary="-- Everyone --" sx={{ color: 'primary.main', fontWeight: 'bold' }} /></MenuItem>
-                {users.map((u) => (
-                  <MenuItem key={u._id} value={u._id}>
-                    <Checkbox checked={selectedUsers.indexOf(u._id) > -1} />
-                    <ListItemText primary={u.fullName} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Stack>
+        <Box display="flex" alignItems="center" gap={1} mb={2}>
+            <FilterList color="action" />
+            <Typography variant="h6" fontWeight="bold">Φίλτρα Αναζήτησης</Typography>
+        </Box>
+        
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="el">
+          <Grid container spacing={2} alignItems="center">
+              
+              {/* ✅ ΗΜΕΡΟΜΗΝΙΕΣ (Τώρα md=4 -> 33% πλάτος, πολύ μεγάλα) */}
+              <Grid item xs={12} sm={6} md={4}>
+                  <DatePicker 
+                    label="Από" 
+                    value={startDate} 
+                    onChange={(newValue) => setStartDate(newValue)}
+                    format="DD/MM/YYYY"
+                    slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                  />
+              </Grid>
+              <Grid item xs={12} sm={6} md={4}>
+                  <DatePicker 
+                    label="Έως" 
+                    value={endDate} 
+                    onChange={(newValue) => setEndDate(newValue)}
+                    format="DD/MM/YYYY"
+                    slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                  />
+              </Grid>
 
-          <Button variant="contained" color="success" startIcon={<FileDownload />} onClick={handleExportCSV} disabled={logs.length === 0}>
-            Export Excel
-          </Button>
-        </Stack>
+              {/* ✅ USERS FILTER (md=4) */}
+              <Grid item xs={12} sm={6} md={4}>
+<FormControl fullWidth size="small">
+  <InputLabel shrink id="users-label">Χρήστες</InputLabel>
+
+  <Select
+    labelId="users-label"
+    multiple
+    displayEmpty
+    value={selectedUsers}
+    onChange={(e) => handleMultiSelectChange(e, setSelectedUsers)}
+    input={<OutlinedInput label="Χρήστες" />}
+    MenuProps={MenuProps}
+    renderValue={(selected) => {
+      if (selected.length === 0) return "Όλοι";
+      const names = users
+        .filter(u => selected.includes(u._id))
+        .map(u => u.fullName);
+
+      // (βλέπε Fix 2 παρακάτω για το καλύτερο UX)
+      return names.join(", ");
+    }}
+  >
+    <MenuItem value="everyone">
+      <ListItemText primary="-- Όλοι --" sx={{ color: 'primary.main', fontWeight: 'bold' }} />
+    </MenuItem>
+
+    {users.map((u) => (
+      <MenuItem key={u._id} value={u._id}>
+        <Checkbox checked={selectedUsers.indexOf(u._id) > -1} />
+        <ListItemText primary={u.fullName} />
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
+              </Grid>
+
+              {/* ✅ ROLES FILTER (md=4) */}
+              <Grid item xs={12} sm={6} md={4}>
+<FormControl fullWidth size="small">
+  <InputLabel shrink id="roles-label">Ρόλοι</InputLabel>
+
+  <Select
+    labelId="roles-label"
+    multiple
+    displayEmpty
+    value={selectedRoles}
+    onChange={(e) => handleMultiSelectChange(e, setSelectedRoles)}
+    input={<OutlinedInput label="Ρόλοι" />}
+    MenuProps={MenuProps}
+    renderValue={(selected) => {
+      if (selected.length === 0) return "Όλοι";
+      return selected.join(", ");
+    }}
+  >
+    <MenuItem value="everyone">
+      <ListItemText primary="-- Όλοι --" sx={{ color: "primary.main", fontWeight: "bold" }} />
+    </MenuItem>
+
+    {ALL_ROLES.map((role) => (
+      <MenuItem key={role} value={role}>
+        <Checkbox checked={selectedRoles.indexOf(role) > -1} />
+        <ListItemText primary={role} />
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
+              </Grid>
+
+              {/* ✅ PROJECTS FILTER (md=4) */}
+              <Grid item xs={12} sm={6} md={4}>
+<FormControl fullWidth size="small">
+  <InputLabel shrink id="projects-label">Projects</InputLabel>
+
+  <Select
+    labelId="projects-label"
+    multiple
+    displayEmpty
+    value={selectedProjects}
+    onChange={(e) => handleMultiSelectChange(e, setSelectedProjects)}
+    input={<OutlinedInput label="Projects" />}
+    MenuProps={MenuProps}
+    renderValue={(selected) => {
+      if (selected.length === 0) return "Όλα";
+      return selected.join(", ");
+    }}
+  >
+    <MenuItem value="everyone">
+      <ListItemText primary="-- Όλα --" sx={{ color: "primary.main", fontWeight: "bold" }} />
+    </MenuItem>
+
+    {ALL_PROJECTS.map((proj) => (
+      <MenuItem key={proj} value={proj}>
+        <Checkbox checked={selectedProjects.indexOf(proj) > -1} />
+        <ListItemText primary={proj} />
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
+              </Grid>
+
+              {/* ✅ COMPANIES FILTER (md=4) */}
+              <Grid item xs={12} sm={6} md={4}>
+<FormControl fullWidth size="small">
+  <InputLabel shrink id="companies-label">Εταιρείες</InputLabel>
+
+  <Select
+    labelId="companies-label"
+    multiple
+    displayEmpty
+    value={selectedCompanies}
+    onChange={(e) => handleMultiSelectChange(e, setSelectedCompanies)}
+    input={<OutlinedInput label="Εταιρείες" />}
+    MenuProps={MenuProps}
+    renderValue={(selected) => {
+      if (selected.length === 0) return "Όλες";
+      return selected.join(", ");
+    }}
+  >
+    <MenuItem value="everyone">
+      <ListItemText primary="-- Όλες --" sx={{ color: "primary.main", fontWeight: "bold" }} />
+    </MenuItem>
+
+    {ALL_COMPANIES.map((comp) => (
+      <MenuItem key={comp} value={comp}>
+        <Checkbox checked={selectedCompanies.indexOf(comp) > -1} />
+        <ListItemText primary={comp} />
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
+              </Grid>
+
+              {/* ACTION BUTTONS (Κάτω δεξιά, όλο το πλάτος) */}
+              <Grid item xs={12} display="flex" justifyContent="flex-end" sx={{ mt: 2 }}>
+                   <Button variant="contained" color="success" size="large" startIcon={<FileDownload />} onClick={handleExportCSV} disabled={logs.length === 0}>
+                      Export Excel
+                   </Button>
+              </Grid>
+          </Grid>
+        </LocalizationProvider>
       </Paper>
 
       {/* DATA GRID */}
@@ -227,29 +409,11 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
           columns={[
             { field: "dateKey", headerName: "Ημερομηνία", width: 110 },
             { field: "user", headerName: "Χρήστης", flex: 1, valueGetter: (params, row) => {return row?.userId?.fullName || row?.userFullName || "Deleted User";}},
-            // ✅ Νέα Στήλη: Company
-            { 
-              field: "company", 
-              headerName: "Εταιρεία", 
-              width: 100, 
-              valueGetter: (params, row) => row.userCompany || row?.userId?.company || "-" 
-            },
-            { 
-              field: "role", 
-              headerName: "Ρόλος", 
-              width: 100, 
-              valueGetter: (params, row) => row?.userId?.role || "-" 
-            },
-            { 
-              field: "project", 
-              headerName: "Project", 
-              width: 100, 
-              valueGetter: (params, row) => row?.userId?.project || "-" 
-            },
-
+            { field: "company", headerName: "Εταιρεία", width: 100, valueGetter: (params, row) => row.userCompany || row?.userId?.company || "-" },
+            { field: "role", headerName: "Ρόλος", width: 100, valueGetter: (params, row) => row?.userId?.role || "-" },
+            { field: "project", headerName: "Project", width: 100, valueGetter: (params, row) => row?.userId?.project || "-" },
             { field: "firstLogin", headerName: "Έναρξη", width: 90, renderCell: (p) => p.row.firstLoginAt ? dayjs(p.row.firstLoginAt).format("HH:mm") : "-" },
             { field: "lastLogout", headerName: "Λήξη", width: 90, renderCell: (p) => p.row.lastLogoutAt ? dayjs(p.row.lastLogoutAt).format("HH:mm") : "-" },
-            
             { field: "working", headerName: "Εργασία", width: 100, renderCell: (p) => msToHHMMSS(p.row?.workingMs) },
             { field: "break", headerName: "Διάλειμμα", width: 100, renderCell: (p) => msToHHMMSS(p.row?.breakMs) },
             { field: "total", headerName: "Σύνολο", width: 100, renderCell: (p) => msToHHMMSS((p.row?.workingMs || 0) + (p.row?.breakMs || 0)) },
@@ -268,7 +432,7 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
         />
       </Box>
 
-      {/* EDIT DIALOG (ΙΔΙΟ ΜΕ ΠΡΙΝ) */}
+      {/* EDIT DIALOG */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="sm" fullWidth>
           <DialogTitle>Επεξεργασία Log</DialogTitle>
           <DialogContent dividers>
