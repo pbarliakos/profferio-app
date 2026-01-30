@@ -165,7 +165,7 @@ exports.getAllLogs = async (req, res) => {
     }
 
     const logs = await TimeDaily.find(query)
-      .populate("userId", "fullName username project")
+      .populate("userId", "fullName username role project")
       .sort({ dateKey: -1 }); // Φθίνουσα ταξινόμηση (νεότερα πρώτα)
 
     // Υπολογισμός τελικών χρόνων (αν κάποιος είναι ακόμα Working, προσθέτουμε τον χρόνο που πέρασε)

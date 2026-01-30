@@ -92,10 +92,14 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
 
   const handleExportCSV = () => {
     if (logs.length === 0) return;
-    const headers = ["Ημερομηνία", "Χρήστης", "Έναρξη", "Λήξη", "Σύνολο", "Εργασία", "Διάλειμμα", "Status"];
+    // ✅ Προσθήκη Role και Project στα Headers
+    const headers = ["Ημερομηνία", "Χρήστης", "Ρόλος", "Project", "Έναρξη", "Λήξη", "Σύνολο", "Εργασία", "Διάλειμμα", "Status"];
     const rows = logs.map(log => [
       log.dateKey,
       log.userId?.fullName || log.userFullName || "Deleted User",
+      // ✅ Προσθήκη Role και Project στα δεδομένα Export
+      log.userId?.role || "-",
+      log.userId?.project || "-",
       log.firstLoginAt ? dayjs(log.firstLoginAt).format("HH:mm:ss") : "-",
       log.lastLogoutAt ? dayjs(log.lastLogoutAt).format("HH:mm:ss") : "-",
       msToHHMMSS(log.workingMs + log.breakMs),
@@ -141,7 +145,7 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
               status: editForm.status,
               storedWorkMs: HHMMSStoMs(editForm.workingTimeStr),
               storedBreakMs: HHMMSStoMs(editForm.breakTimeStr),
-              firstLoginAt: editForm.firstLoginAt, // Στέλνουμε το string (ISO format θα το κάνει η JS)
+              firstLoginAt: editForm.firstLoginAt, 
               lastLogoutAt: editForm.lastLogoutAt
           };
 
@@ -162,7 +166,7 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
           <Button startIcon={<ArrowBack />} onClick={() => navigate("/admin")} sx={{ fontWeight: 600 }}>
             DASHBOARD
           </Button>
-          <Typography variant="h4" fontWeight={800}>Time Logs</Typography>
+          <Typography variant="h4" fontWeight={800}>Team Logs</Typography>
         </Stack>
         <Stack direction="row" spacing={2} alignItems="center">
           <Typography variant="body2" sx={{ opacity: 0.8 }}>
@@ -223,7 +227,20 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
           columns={[
             { field: "dateKey", headerName: "Ημερομηνία", width: 110 },
             { field: "user", headerName: "Χρήστης", flex: 1, valueGetter: (params, row) => {return row?.userId?.fullName || row?.userFullName || "Διεγραμμένος Χρήστης";}},
-            // ✅ Νέες Στήλες
+            // ✅ Νέες Στήλες: Role & Project
+            { 
+              field: "role", 
+              headerName: "Ρόλος", 
+              width: 100, 
+              valueGetter: (params, row) => row?.userId?.role || "-" 
+            },
+            { 
+              field: "project", 
+              headerName: "Project", 
+              width: 100, 
+              valueGetter: (params, row) => row?.userId?.project || "-" 
+            },
+
             { field: "firstLogin", headerName: "Έναρξη", width: 90, renderCell: (p) => p.row.firstLoginAt ? dayjs(p.row.firstLoginAt).format("HH:mm") : "-" },
             { field: "lastLogout", headerName: "Λήξη", width: 90, renderCell: (p) => p.row.lastLogoutAt ? dayjs(p.row.lastLogoutAt).format("HH:mm") : "-" },
             
@@ -274,7 +291,6 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
                       </FormControl>
                   </Grid>
                   
-                  {/* ✅ Νέα Πεδία Edit */}
                   <Grid item xs={6}>
                       <TextField 
                         label="Ώρα Έναρξης" 
