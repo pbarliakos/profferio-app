@@ -122,3 +122,21 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Logout: Κλείνει το session στο LoginLog
+exports.logout = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Βρίσκουμε όλα τα ανοιχτά logs του χρήστη και βάζουμε logoutAt
+    await LoginLog.updateMany(
+      { userId: userId, logoutAt: { $exists: false } },
+      { $set: { logoutAt: new Date() } }
+    );
+
+    res.json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.error("Logout Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};

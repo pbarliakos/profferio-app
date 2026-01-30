@@ -1,270 +1,281 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
-import { 
-  Box, Button, Card, CardContent, Divider, Stack, Typography, 
-  CircularProgress, Alert, TextField, Paper 
-} from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import { Logout, LightMode as LightModeIcon, DarkMode as DarkModeIcon, History as HistoryIcon } from "@mui/icons-material";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { 
+  Box, Button, Typography, Paper, Grid, Container, 
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  TextField, Chip
+} from "@mui/material";
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
+import StopIcon from '@mui/icons-material/Stop';
+import CoffeeIcon from '@mui/icons-material/Coffee';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from "react-router-dom";
-import { DateTime } from "luxon";
 
-// Helper για μετατροπή MS σε HH:MM:SS
-function msToHHMMSS(ms) {
-  if (!ms || ms < 0) return "00:00:00";
-  const totalSec = Math.floor(ms / 1000);
-  const h = Math.floor(totalSec / 3600);
-  const m = Math.floor((totalSec % 3600) / 60);
-  const s = totalSec % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
+// Helper για μετατροπή ms σε HH:MM:SS
+const formatTime = (ms) => {
+  if (!ms) ms = 0;
+  const seconds = Math.floor((ms / 1000) % 60);
+  const minutes = Math.floor((ms / (1000 * 60)) % 60);
+  const hours = Math.floor((ms / (1000 * 60 * 60)));
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+};
 
 const MyTime = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
+  const [status, setStatus] = useState("CLOSED"); // CLOSED, WORKING, BREAK
+  const [data, setData] = useState(null);
   
-  // States για το τρέχον session
-  const [daily, setDaily] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [err, setErr] = useState("");
-  const [now, setNow] = useState(Date.now());
-
-  // States για το Ιστορικό
+  // Counters για εμφάνιση (τρέχουν τοπικά)
+  const [displayWork, setDisplayWork] = useState(0);
+  const [displayBreak, setDisplayBreak] = useState(0);
+  
+  // History Filters
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
   const [history, setHistory] = useState([]);
-  const [selectedMonth, setSelectedMonth] = useState(DateTime.now().toFormat("yyyy-MM"));
-  const [historyLoading, setHistoryLoading] = useState(false);
 
-  const userInfo = JSON.parse(localStorage.getItem("user")) || {};
-  const { fullName, role } = userInfo;
-
-    const api = useMemo(() => {
-    // Διαβάζει το URL από το .env (π.χ. http://profferio.othisisa.gr:5000)
-    const instance = axios.create({ 
-        baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000" 
-    });
-    
-    const token = localStorage.getItem("token");
-    if (token) instance.defaults.headers.common.Authorization = `Bearer ${token}`;
-    return instance;
-    }, []);
-
-  // Ανάκτηση τρέχουσας ημέρας
-  const refreshCurrentDay = useCallback(async () => {
+  // 1. Fetch Initial Data
+  const fetchData = async () => {
     try {
-      const res = await api.get("/api/time/day");
-      setDaily(res.data.daily);
-    } catch (e) {
-      console.error("Fetch day error", e);
-    }
-  }, [api]);
-
-  // Ανάκτηση Ιστορικού Μήνα
-  const fetchHistory = useCallback(async (month) => {
-    setHistoryLoading(true);
-    try {
-      const res = await api.get(`/api/time/month?month=${month}`);
-      setHistory(res.data.days || []);
-    } catch (e) {
-      setErr("Αποτυχία φόρτωσης ιστορικού");
-    } finally {
-      setHistoryLoading(false);
-    }
-  }, [api]);
-
-  // Clock tick
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  // Initial load
-  useEffect(() => {
-    const init = async () => {
-      setLoading(true);
-      await Promise.all([refreshCurrentDay(), fetchHistory(selectedMonth)]);
-      setLoading(false);
-    };
-    init();
-  }, [refreshCurrentDay, fetchHistory, selectedMonth]);
-
-  const liveTotals = useMemo(() => {
-    if (!daily?.firstLoginAt) return { breakMs: 0, totalPresenceMs: 0, workingMs: 0 };
-    const startMs = new Date(daily.firstLoginAt).getTime();
-    const endMs = daily.status === "closed" && daily.lastLogoutAt ? new Date(daily.lastLogoutAt).getTime() : now;
-    const totalPresenceMs = Math.max(0, endMs - startMs);
-    let breakMs = daily.breakMs || 0;
-    if (daily.breakOpenAt) {
-      breakMs += Math.max(0, now - new Date(daily.breakOpenAt).getTime());
-    }
-    return { breakMs, totalPresenceMs, workingMs: Math.max(0, totalPresenceMs - breakMs) };
-  }, [daily, now]);
-
-  const handleAction = async (endpoint) => {
-    setErr("");
-    setActionLoading(true);
-    try {
-      await api.post(endpoint);
-      await refreshCurrentDay();
-      await fetchHistory(selectedMonth); // Refresh και τον πίνακα
-    } catch (e) {
-      setErr(e?.response?.data?.message || "Η ενέργεια απέτυχε");
-    } finally {
-      setActionLoading(false);
+      const res = await axios.get("/api/time/today");
+      updateStateFromDB(res.data);
+    } catch (err) {
+      console.error("Error fetching time data", err);
     }
   };
 
-    const handleLogout = async () => {
+  const fetchHistory = async () => {
     try {
-        // ✅ Χρησιμοποιούμε το instance 'api' για να πάρει αυτόματα το σωστό URL και Token
-        await api.post("/api/auth/logout");
-    } catch (err) { 
-        console.error("Logout error", err); 
-    } finally {
-        localStorage.clear();
-        navigate("/");
+      const res = await axios.get(`/api/time/history?month=${selectedMonth}`);
+      setHistory(res.data);
+    } catch (err) {
+      console.error(err);
     }
-    };
+  };
 
-  // Ορισμός Στηλών DataGrid
-  const columns = [
-    { field: "dateKey", headerName: "Ημερομηνία", flex: 1, minWidth: 120 },
-    { 
-      field: "workingMs", 
-      headerName: "Εργασία", 
-      flex: 1, 
-      renderCell: (params) => msToHHMMSS(params.value) 
-    },
-    { 
-      field: "breakMs", 
-      headerName: "Διάλειμμα", 
-      flex: 1, 
-      renderCell: (params) => msToHHMMSS(params.value) 
-    },
-    { 
-      field: "totalPresenceMs", 
-      headerName: "Παρουσία", 
-      flex: 1, 
-      renderCell: (params) => msToHHMMSS(params.value) 
-    },
-    { 
-      field: "status", 
-      headerName: "Status", 
-      width: 120,
-      renderCell: (params) => (
-        <Box sx={{ 
-          color: params.value === "open" ? "success.main" : "text.secondary",
-          fontWeight: "bold",
-          textTransform: "uppercase",
-          fontSize: "0.75rem"
-        }}>
-          {params.value}
-        </Box>
-      )
-    },
-  ];
+  // 2. Ενημέρωση state από DB response
+  const updateStateFromDB = (dbDoc) => {
+    setData(dbDoc);
+    setStatus(dbDoc.status);
+    
+    // Υπολογισμός αρχικών τιμών βάσει DB
+    if (dbDoc.status === "CLOSED") {
+      setDisplayWork(dbDoc.storedWorkMs);
+      setDisplayBreak(dbDoc.storedBreakMs);
+    } else {
+      // Αν είναι ενεργό, πρέπει να προσθέσουμε τον χρόνο που πέρασε
+      const now = new Date().getTime();
+      const lastAction = new Date(dbDoc.lastActionAt).getTime();
+      const elapsed = now - lastAction;
 
-  if (loading) return <Box p={5} textAlign="center"><CircularProgress /></Box>;
+      if (dbDoc.status === "WORKING") {
+        setDisplayWork(dbDoc.storedWorkMs + elapsed);
+        setDisplayBreak(dbDoc.storedBreakMs);
+      } else if (dbDoc.status === "BREAK") {
+        setDisplayWork(dbDoc.storedWorkMs);
+        setDisplayBreak(dbDoc.storedBreakMs + elapsed);
+      }
+    }
+  };
 
-  const hasDay = !!daily?.firstLoginAt;
-  const isClosed = daily?.status === "closed";
-  const isOnBreak = !!daily?.breakOpenAt;
-  const canWork = hasDay && !isClosed;
+  useEffect(() => {
+    fetchData();
+    fetchHistory();
+  }, [selectedMonth]);
+
+  // 3. Timer Ticking (Τρέχει κάθε δευτερόλεπτο μόνο για το UI)
+  useEffect(() => {
+    let interval;
+    if (status === "WORKING" || status === "BREAK") {
+      interval = setInterval(() => {
+        if (data && data.lastActionAt) {
+          const now = new Date().getTime();
+          const lastAction = new Date(data.lastActionAt).getTime();
+          const elapsed = now - lastAction;
+
+          if (status === "WORKING") {
+            setDisplayWork(data.storedWorkMs + elapsed);
+          } else if (status === "BREAK") {
+            setDisplayBreak(data.storedBreakMs + elapsed);
+          }
+        }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [status, data]);
+
+  // 4. Actions
+  const handleAction = async (actionType) => {
+    try {
+      const res = await axios.post("/api/time/action", { action: actionType });
+      updateStateFromDB(res.data);
+      fetchHistory(); // Ανανέωση ιστορικού
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      if (status !== "CLOSED") {
+        await axios.post("/api/time/action", { action: "STOP" });
+      }
+      await axios.post("/api/auth/logout");
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      localStorage.removeItem("project");
+      navigate("/");
+    }
+  };
 
   return (
-    <Box p={4} sx={{ maxWidth: 1100, mx: "auto" }}>
-      {/* HEADER */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4" fontWeight={800} color="primary">Time Tracker</Typography>
-        <Box display="flex" gap={2} alignItems="center">
-          <Typography variant="caption" color="text.secondary">{fullName} | {role}</Typography>
-          <Button
-            variant="outlined"
-            startIcon={darkMode ? <LightModeIcon /> : <DarkModeIcon />}
-            onClick={() => setDarkMode(!darkMode)}
-          >
-            {darkMode ? "Light" : "Dark"}
-          </Button>
-          <Button variant="outlined" startIcon={<Logout />} color="error" onClick={handleLogout}>
-            Logout
-          </Button>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {/* Header */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Typography variant="h4" fontWeight="bold" color="primary">Time Tracker</Typography>
+        <Box>
+            <Button variant="outlined" onClick={() => setDarkMode(!darkMode)} sx={{ mr: 2 }}>
+               {darkMode ? "LIGHT" : "DARK"}
+            </Button>
+            <Button variant="outlined" color="error" startIcon={<LogoutIcon />} onClick={handleLogout}>
+              LOGOUT
+            </Button>
         </Box>
       </Box>
 
-      {/* TRACKER CARD */}
-      <Card sx={{ borderRadius: 3, mb: 4, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-        <CardContent sx={{ p: 4 }}>
-          {err && <Alert severity="error" sx={{ mb: 3 }}>{err}</Alert>}
-          <Stack direction="row" spacing={4} sx={{ flexWrap: "wrap", mb: 4 }}>
-            <StatBox label="Status" value={!hasDay ? "Εκτός" : isClosed ? "Κλειστό" : isOnBreak ? "Διάλειμμα" : "Εργασία"} />
-            <StatBox label="Working Time" value={msToHHMMSS(liveTotals.workingMs)} highlight />
-            <StatBox label="Break" value={msToHHMMSS(liveTotals.breakMs)} />
-            <StatBox label="Presence" value={msToHHMMSS(liveTotals.totalPresenceMs)} />
-          </Stack>
+      {/* Main Stats Card */}
+      <Paper sx={{ p: 4, mb: 4, bgcolor: 'background.paper', borderRadius: 2 }} elevation={3}>
+        <Grid container spacing={4} alignItems="center">
+          {/* ✅ ΔΙΟΡΘΩΣΗ: Αφαίρεση του 'item' και αλλαγή του 'xs' σε 'size' */}
+          <Grid size={3}>
+             <Typography variant="overline" color="text.secondary">STATUS</Typography>
+             <Typography variant="h5" fontWeight="bold">
+               {status === "WORKING" ? "Εργασία" : status === "BREAK" ? "Διάλειμμα" : "Εκτός"}
+             </Typography>
+          </Grid>
+          <Grid size={3}>
+             <Typography variant="overline" color="text.secondary">WORKING TIME</Typography>
+             <Typography variant="h4" fontWeight="bold" color="primary.main">
+               {formatTime(displayWork)}
+             </Typography>
+          </Grid>
+          <Grid size={3}>
+             <Typography variant="overline" color="text.secondary">BREAK</Typography>
+             <Typography variant="h5" fontWeight="bold">
+               {formatTime(displayBreak)}
+             </Typography>
+          </Grid>
+          <Grid size={3}>
+             <Typography variant="overline" color="text.secondary">TOTAL (WORK+BREAK)</Typography>
+             <Typography variant="h5">
+               {formatTime(displayWork + displayBreak)}
+             </Typography>
+          </Grid>
+        </Grid>
 
-          <Divider sx={{ my: 3 }} />
+        <Box mt={4} display="flex" gap={2}>
+           {status === "CLOSED" && (
+             <Button 
+               variant="contained" 
+               color="warning" 
+               size="large"
+               startIcon={<PlayArrowIcon />}
+               onClick={() => handleAction("START")}
+             >
+               {data?.firstLoginAt ? "ΕΠΑΝΑΝΟΙΓΜΑ" : "ΕΝΑΡΞΗ ΕΡΓΑΣΙΑΣ"}
+             </Button>
+           )}
 
-          <Stack direction="row" spacing={2} justifyContent="center">
-            <Button variant="contained" size="large" onClick={() => handleAction("/api/time/login")} disabled={canWork || actionLoading}>
-              {hasDay ? "Επανανοιγμα" : "Εναρξη Ημερας"}
-            </Button>
-            <Button variant="outlined" size="large" onClick={() => handleAction(isOnBreak ? "/api/time/break/end" : "/api/time/break/start")} disabled={!canWork || actionLoading}>
-              {isOnBreak ? "Τελος Διαλειμματος" : "Διαλειμμα"}
-            </Button>
-            <Button variant="contained" color="warning" size="large" onClick={() => handleAction("/api/time/logout")} disabled={!canWork || actionLoading}>
-              Τελος Ημερας
-            </Button>
-          </Stack>
-        </CardContent>
-      </Card>
+           {status === "WORKING" && (
+             <>
+               <Button 
+                 variant="outlined" 
+                 color="info" 
+                 size="large" 
+                 startIcon={<CoffeeIcon />}
+                 onClick={() => handleAction("BREAK")}
+               >
+                 ΔΙΑΛΕΙΜΜΑ
+               </Button>
+               <Button 
+                 variant="contained" 
+                 color="warning" 
+                 size="large" 
+                 startIcon={<StopIcon />}
+                 onClick={() => handleAction("STOP")}
+               >
+                 ΤΕΛΟΣ ΗΜΕΡΑΣ
+               </Button>
+             </>
+           )}
 
-      {/* HISTORY SECTION */}
-      <Paper sx={{ p: 3, borderRadius: 3 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <HistoryIcon color="action" />
-            <Typography variant="h6" fontWeight={700}>Ιστορικό Εργασίας</Typography>
-          </Stack>
-          
-          <TextField
-            label="Μήνας"
-            type="month"
-            size="small"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            sx={{ width: 200 }}
-          />
-        </Box>
-
-        <Box sx={{ height: 400, width: "100%" }}>
-          <DataGrid
-            rows={history}
-            columns={columns}
-            getRowId={(row) => row._id}
-            loading={historyLoading}
-            pageSizeOptions={[31, 50, 100]}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 31 } },
-            }}
-            disableRowSelectionOnClick
-            sx={{
-              border: "none",
-              "& .MuiDataGrid-cell:focus": { outline: "none" },
-            }}
-          />
+           {status === "BREAK" && (
+             <Button 
+               variant="contained" 
+               color="success" 
+               size="large" 
+               startIcon={<PlayArrowIcon />}
+               onClick={() => handleAction("RESUME")}
+             >
+               ΤΕΛΟΣ ΔΙΑΛΕΙΜΜΑΤΟΣ
+             </Button>
+           )}
         </Box>
       </Paper>
-    </Box>
+
+      {/* History Section */}
+      <Box display="flex" alignItems="center" mb={2}>
+        <Typography variant="h6" sx={{ flexGrow: 1 }}>Ιστορικό Εργασίας</Typography>
+        <TextField
+          type="month"
+          label="Μήνας"
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          size="small"
+        />
+      </Box>
+
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Ημερομηνία</TableCell>
+              <TableCell>Εργασία</TableCell>
+              <TableCell>Διάλειμμα</TableCell>
+              <TableCell>Total (Work+Break)</TableCell>
+              <TableCell>Έναρξη / Λήξη</TableCell>
+              <TableCell>Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {history.map((row) => (
+              <TableRow key={row._id}>
+                <TableCell>{row.dateKey}</TableCell>
+                <TableCell>{formatTime(row.storedWorkMs)}</TableCell>
+                <TableCell>{formatTime(row.storedBreakMs)}</TableCell>
+                <TableCell>{formatTime(row.storedWorkMs + row.storedBreakMs)}</TableCell>
+                <TableCell>
+                    {row.firstLoginAt ? new Date(row.firstLoginAt).toLocaleTimeString('el-GR') : '-'} / 
+                    {row.lastLogoutAt ? new Date(row.lastLogoutAt).toLocaleTimeString('el-GR') : '-'}
+                </TableCell>
+                <TableCell>
+                  <Chip 
+                    label={row.status} 
+                    color={row.status === "CLOSED" ? "default" : "success"} 
+                    size="small" 
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
   );
 };
-
-const StatBox = ({ label, value, highlight }) => (
-  <Box sx={{ minWidth: 140 }}>
-    <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", letterSpacing: 1 }}>{label}</Typography>
-    <Typography variant="h5" fontWeight={highlight ? 800 : 500} color={highlight ? "primary.main" : "text.primary"}>
-      {value}
-    </Typography>
-  </Box>
-);
 
 export default MyTime;

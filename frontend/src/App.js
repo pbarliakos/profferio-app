@@ -9,7 +9,8 @@ import Alterlife from "./pages/Alterlife";
 import Other from "./pages/Other";
 import AdminDashboard from "./pages/AdminDashboard";
 import Nova from "./pages/Nova";
-import MyTime from "./pages/MyTime";
+// 👇 ΔΙΟΡΘΩΣΗ: Πλέον δείχνει στο σωστό αρχείο MyTime.js
+import MyTime from "./pages/MyTime"; 
 
 // Admin Σελίδες
 import AdminTimeLogs from "./pages/admin/AdminTimeLogs";
@@ -21,11 +22,25 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
+// ✅ Axios Interceptor: Βάζει αυτόματα το token σε κάθε αίτημα
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 function App() {
-  // ✅ Φόρτωση του theme: Default σε "dark" αν δεν υπάρχει στο localStorage
+  // ✅ Φόρτωση του theme
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem("theme");
-    return savedTheme ? savedTheme === "dark" : true; // true = dark mode by default
+    return savedTheme ? savedTheme === "dark" : true; 
   });
 
   // ✅ Αποθήκευση της προτίμησης theme
@@ -77,7 +92,6 @@ function App() {
       <CssBaseline />
       <Router>
         <Routes>
-          {/* ✅ ΕΔΩ ΠΕΡΝΑΜΕ ΤΑ PROPS ΣΤΟ LOGIN ΓΙΑ ΝΑ ΛΕΙΤΟΥΡΓΕΙ ΤΟ ΚΟΥΜΠΙ */}
           <Route path="/" element={<Login darkMode={darkMode} setDarkMode={setDarkMode} />} />
 
           {/* 🛡️ Admin Protected Routes */}

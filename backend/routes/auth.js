@@ -1,179 +1,139 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
+const { DateTime } = require("luxon");
 
+// Controllers & Middleware
 const { register, login } = require("../controllers/authController");
-const LoginLog = require("../models/LoginLog");
 const { protect } = require("../middleware/authMiddleware");
 
-// ✅ Time Tracking
+// Models
+const LoginLog = require("../models/LoginLog");
 const TimeDaily = require("../models/TimeDaily");
-const { DateTime } = require("luxon");
+
 const TZ = "Europe/Athens";
 
-function getDateKey(date = new Date()) {
-  return DateTime.fromJSDate(date).setZone(TZ).toFormat("yyyy-LL-dd");
-}
+// ✅ Helper: Κλείνει τη μέρα με το ΝΕΟ Schema
+async function forceCloseDay(userId) {
+  const now = new Date();
+  const dateKey = DateTime.now().setZone(TZ).toFormat("yyyy-MM-dd");
 
-function isValidObjectId(id) {
-  return mongoose.Types.ObjectId.isValid(id);
-}
+  try {
+    const daily = await TimeDaily.findOne({ userId, dateKey });
 
-async function closeTimeDailyForUser(userId, when = new Date()) {
-  const dateKey = getDateKey(when);
-  const daily = await TimeDaily.findOne({ userId, dateKey });
+    if (!daily || daily.status === "CLOSED") return;
 
-  if (!daily || !daily.firstLoginAt) return null;
+    let elapsed = 0;
+    if (daily.lastActionAt) {
+      elapsed = now.getTime() - new Date(daily.lastActionAt).getTime();
+    }
 
-  if (daily.breakOpenAt) {
-    daily.breakMs = (daily.breakMs || 0) + Math.max(0, when.getTime() - daily.breakOpenAt.getTime());
-    daily.breakOpenAt = null;
+    if (daily.status === "WORKING") {
+      daily.storedWorkMs += elapsed;
+    } else if (daily.status === "BREAK") {
+      daily.storedBreakMs += elapsed;
+    }
+
+    daily.status = "CLOSED";
+    daily.lastLogoutAt = now;
+    daily.lastActionAt = now;
+    
+    daily.logs.push({ action: "FORCE_STOP", timestamp: now });
+
+    await daily.save();
+    console.log(`✅ Auto-closed day for user ${userId}`);
+  } catch (err) {
+    console.error(`❌ Error force-closing day for user ${userId}:`, err);
   }
-
-  daily.lastLogoutAt = when;
-  daily.totalPresenceMs = Math.max(0, when.getTime() - daily.firstLoginAt.getTime());
-  daily.workingMs = Math.max(0, daily.totalPresenceMs - (daily.breakMs || 0));
-  daily.status = "closed";
-
-  await daily.save();
-  return daily;
 }
 
+// ================= ROUTES =================
+
+// 1. Register & Login
 router.post("/register", register);
 router.post("/login", login);
 
-// ✅ Logout (protected) -> κλείνει ΚΑΙ TimeDaily (End Day / πραγματικό logout)
+// 2. Logout (User Action)
 router.post("/logout", protect, async (req, res) => {
   try {
+    const userId = req.user._id;
+    const now = new Date();
+
     const latestLog = await LoginLog.findOne({
-      userId: req.user.id,
+      userId: userId,
       logoutAt: { $exists: false }
     }).sort({ loginAt: -1 });
 
     if (latestLog) {
-      const now = new Date();
       latestLog.logoutAt = now;
       latestLog.duration = Math.round((now - latestLog.loginAt) / 60000);
       await latestLog.save();
-
-      // ✅ εδώ κλείνουμε το day (human-friendly κανόνας)
-      await closeTimeDailyForUser(req.user.id, now);
     }
 
-    res.json({ message: "Logged out and saved" });
+    await forceCloseDay(userId);
+
+    res.json({ message: "Logged out successfully" });
   } catch (err) {
-    console.error("❌ /logout error:", err);
-    res.status(500).json({ error: err.message || "Logout logging failed" });
+    console.error("❌ Logout error:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// ✅ Logout via beacon (unprotected)
-// 🚫 Human-friendly: ΔΕΝ κλείνουμε TimeDaily στο refresh/tab close.
+// 3. Logout via Beacon (Tab Close)
 router.post("/logout-beacon", async (req, res) => {
   try {
     const { userId } = req.body || {};
-    if (!userId || !isValidObjectId(userId)) {
-      return res.status(200).json({ message: "beacon ignored (invalid userId)" });
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(200).json({ message: "Ignored invalid userId" });
     }
 
+    const now = new Date();
     const latestLog = await LoginLog.findOne({
       userId,
       logoutAt: { $exists: false },
     }).sort({ loginAt: -1 });
 
     if (latestLog) {
-      const now = new Date();
       latestLog.logoutAt = now;
       latestLog.duration = Math.round((now - latestLog.loginAt) / 60000);
       await latestLog.save();
     }
 
-    res.json({ message: "Logged out via beacon (session only)" });
+    await forceCloseDay(userId);
+
+    res.json({ message: "Beacon logout processed" });
   } catch (err) {
-    console.error("❌ /logout-beacon error:", err);
-    res.status(500).json({ error: err.message || "logout-beacon failed" });
+    console.error("❌ Beacon error:", err);
+    res.status(200).end(); 
   }
 });
 
-// ✅ Force logout (optional: βάλε protect+isAdmin αν θες)
-router.post("/force-logout", async (req, res) => {
-  try {
-    const { userId } = req.body || {};
-    if (!userId || !isValidObjectId(userId)) {
-      return res.status(400).json({ message: "Invalid userId" });
-    }
-
-    const openSessions = await LoginLog.find({
-      userId,
-      logoutAt: { $exists: false }
-    });
-
-    if (!openSessions.length) {
-      return res.status(404).json({ message: "No open sessions for this user." });
-    }
-
-    const now = new Date();
-    for (const log of openSessions) {
-      log.logoutAt = now;
-      log.duration = Math.round((now - log.loginAt) / 60000);
-      await log.save();
-    }
-
-    // ✅ force logout κλείνει και TimeDaily (λογικό)
-    await closeTimeDailyForUser(userId, now);
-
-    res.json({ message: `Force logout done (${openSessions.length} sessions closed)` });
-  } catch (err) {
-    console.error("❌ /force-logout error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ✅ Open sessions
-router.get("/open-sessions", async (req, res) => {
-  try {
-    const openSessions = await LoginLog.find({
-      logoutAt: { $exists: false }
-    }).populate("userId", "username fullName role project");
-    res.json(openSessions);
-  } catch (err) {
-    console.error("❌ /open-sessions error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ✅ Heartbeat
+// 4. Heartbeat
 router.post("/heartbeat", async (req, res) => {
   try {
     const { userId } = req.body || {};
-    if (!userId || !isValidObjectId(userId)) {
-      return res.status(200).json({ message: "pong (ignored invalid userId)" });
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(200).json({ message: "pong" });
     }
-
-    const now = new Date();
-
     const latestLog = await LoginLog.findOne({
       userId,
       logoutAt: { $exists: false }
     }).sort({ loginAt: -1 });
 
     if (latestLog) {
-      latestLog.lastSeen = now;
+      latestLog.lastSeen = new Date();
       await latestLog.save();
     }
-
     res.json({ message: "pong" });
   } catch (err) {
-    console.error("❌ /heartbeat error:", err);
-    res.status(500).json({ error: err.message || "heartbeat failed" });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// ✅ Force close inactive sessions
-// ✅ Human-friendly: εδώ (και ΜΟΝΟ εδώ) θα κλείσει day αυτόματα αν ο χρήστης εξαφανιστεί.
+// 5. CRON JOB: Force Close Inactive Sessions
 router.post("/force-close-inactive-sessions", async (req, res) => {
   try {
-    const INACTIVE_SECONDS = 300;
+    const INACTIVE_SECONDS = 300; 
     const threshold = new Date(Date.now() - INACTIVE_SECONDS * 1000);
 
     const deadLogs = await LoginLog.find({
@@ -181,23 +141,57 @@ router.post("/force-close-inactive-sessions", async (req, res) => {
       lastSeen: { $lt: threshold }
     });
 
-    let closed = 0;
     const now = new Date();
+    let closedCount = 0;
 
     for (const log of deadLogs) {
       log.logoutAt = now;
       log.duration = Math.round((now - log.loginAt) / 60000);
       await log.save();
-
-      // ✅ εδώ κλείνουμε TimeDaily λόγω inactivity (ok για κανόνα #2)
-      await closeTimeDailyForUser(log.userId, now);
-
-      closed++;
+      await forceCloseDay(log.userId);
+      closedCount++;
     }
-
-    res.json({ message: `Force-closed ${closed} sessions.` });
+    res.json({ message: `Force-closed ${closedCount} sessions.` });
   } catch (err) {
-    console.error("❌ /force-close-inactive-sessions error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ 6. OPEN SESSIONS (Για το Agent Monitor)
+router.get("/open-sessions", protect, async (req, res) => {
+  try {
+    // Επιστρέφουμε όλα τα logs που δεν έχουν logoutAt
+    const openSessions = await LoginLog.find({
+      logoutAt: { $exists: false }
+    }).populate("userId", "username fullName role project");
+    
+    res.json(openSessions);
+  } catch (err) {
+    console.error("❌ /open-sessions error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ 7. FORCE LOGOUT (Για το Agent Monitor - Admin Button)
+router.post("/force-logout", protect, async (req, res) => {
+  try {
+    const { userId } = req.body || {};
+    if (!userId) return res.status(400).json({ message: "UserId required" });
+
+    const now = new Date();
+
+    // Κλείσιμο Sessions
+    await LoginLog.updateMany(
+      { userId: userId, logoutAt: { $exists: false } },
+      { $set: { logoutAt: now } }
+    );
+
+    // Κλείσιμο TimeDaily
+    await forceCloseDay(userId);
+
+    res.json({ message: "User force logged out successfully" });
+  } catch (err) {
+    console.error("❌ /force-logout error:", err);
     res.status(500).json({ error: err.message });
   }
 });
