@@ -9,6 +9,9 @@ const cron = require("node-cron");
 const axios = require("axios");
 const timeRoutes = require("./routes/timeRoutes");
 
+// ✅ 1. Import το νέο αρχείο για τα Cron Jobs
+const startCronJobs = require("./cronJobs"); 
+
 dotenv.config();
 
 const app = express();
@@ -39,14 +42,19 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server started on port ${PORT}`);
+  
+  // ✅ 2. Εκκίνηση του Midnight Cron Job (00:01)
+  startCronJobs();
 });
 
-// ✅ Δυναμικό Cron - Χρησιμοποιούμε localhost για να αποφύγουμε 502/Proxy errors
+// ✅ Υπάρχον Δυναμικό Cron (για Inactive Sessions)
+// Συνεχίζει να τρέχει παράλληλα με το νέο Midnight Cron
 cron.schedule("*/1 * * * * *", async () => {
   try {
     // Καλούμε το API εσωτερικά στον εαυτό του
-    await axios.post(`${process.env.INTERNAL_API_URL}/api/auth/force-close-inactive-sessions`);
+    // Σιγουρέψου ότι το INTERNAL_API_URL είναι σωστό στο .env (π.χ. http://localhost:5000)
+    await axios.post(`${process.env.INTERNAL_API_URL || 'http://localhost:' + PORT}/api/auth/force-close-inactive-sessions`);
   } catch (err) {
-    console.log("Cron error:", err.message);
+    // console.log("Cron error:", err.message); // Commented out to reduce noise if needed
   }
 });

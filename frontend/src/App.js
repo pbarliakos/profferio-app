@@ -10,7 +10,7 @@ import Other from "./pages/Other";
 import AdminDashboard from "./pages/AdminDashboard";
 import Nova from "./pages/Nova";
 import MyTime from "./pages/MyTime"; 
-import UserDashboard from "./pages/UserDashboard"; // ✅ Import Dashboard
+import UserDashboard from "./pages/UserDashboard";
 
 // Admin Σελίδες
 import AdminTimeLogs from "./pages/admin/AdminTimeLogs";
@@ -22,6 +22,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
+// ✅ Axios Interceptor: Βάζει token ΚΑΙ διαχειρίζεται το Force Logout
 axios.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -30,7 +31,21 @@ axios.interceptors.request.use(
     }
     return config;
   },
+  (error) => Promise.reject(error)
+);
+
+// ✅ Response Interceptor: Αν λάβουμε 401 (Force Logout), καθαρίζουμε τα πάντα
+axios.interceptors.response.use(
+  (response) => response,
   (error) => {
+    if (error.response && error.response.status === 401) {
+      // Αν δεν είμαστε ήδη στο login page, κάνουμε redirect
+      if (window.location.pathname !== "/") {
+        console.warn("Session expired or force logout. Redirecting...");
+        localStorage.clear();
+        window.location.href = "/";
+      }
+    }
     return Promise.reject(error);
   }
 );
@@ -45,6 +60,7 @@ function App() {
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
+  // Beacon Logout (Tab close)
   useEffect(() => {
     const rawUser = localStorage.getItem("user");
     if (!rawUser) return;
@@ -61,6 +77,7 @@ function App() {
     return () => window.removeEventListener("beforeunload", handleUnload);
   }, []);
 
+  // Heartbeat
   useEffect(() => {
     const rawUser = localStorage.getItem("user");
     if (!rawUser) return;
@@ -68,7 +85,8 @@ function App() {
     if (!user?._id) return;
 
     const interval = setInterval(() => {
-      axios.post("/api/auth/heartbeat", { userId: user._id });
+      // Το heartbeat θα φάει 401 αν γίνει force logout και ο interceptor θα κάνει redirect
+      axios.post("/api/auth/heartbeat", { userId: user._id }).catch(() => {}); 
     }, 15 * 1000);
 
     return () => clearInterval(interval);
@@ -97,13 +115,12 @@ function App() {
             <Route path="/admin/AgentMonitor" element={<AgentMonitor darkMode={darkMode} />} />
           </Route>
 
-          {/* ✅ DASHBOARD ROUTE (Για όλους τους logged in χρήστες) */}
+          {/* 🛡️ User Dashboard */}
           <Route element={<ProtectedRoute />}>
              <Route path="/dashboard" element={<UserDashboard darkMode={darkMode} setDarkMode={setDarkMode} />} />
           </Route>
 
-          {/* ✅ TIME TRACKER ROUTE (Επιτρέπουμε πρόσβαση σε όλους, ή συγκεκριμένα projects) */}
-          {/* Αφαιρέσαμε το strict allowedProject="time" για να μπαίνουν και οι Epic/Nova */}
+          {/* 🛡️ Tools */}
           <Route element={<ProtectedRoute />}>
             <Route path="/my-time" element={<MyTime darkMode={darkMode} setDarkMode={setDarkMode} />} />
           </Route>
@@ -112,7 +129,6 @@ function App() {
             <Route path="/alterlife" element={<Alterlife />} />
           </Route>
 
-          {/* Η Nova είναι ΟΚ με allowedProject="nova" */}
           <Route element={<ProtectedRoute allowedProject="nova" />}>
             <Route path="/nova" element={<Nova />} />
           </Route>

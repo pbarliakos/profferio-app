@@ -16,7 +16,7 @@ import {
 import axios from "axios";
 import dayjs from "dayjs";
 
-const AgentMonitor = () => {
+const AgentMonitor = ({ darkMode }) => { // Πρόσθεσα το darkMode prop αν το χρειάζεσαι για styling
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
@@ -42,33 +42,39 @@ const AgentMonitor = () => {
     try {
       await axios.post(
         "/api/auth/force-logout",
-        { userId },
+        { 
+            logId: sessionId, // ✅ Στέλνουμε το συγκεκριμένο Session ID
+            userId: userId    // ✅ Στέλνουμε και το User ID για το κλείσιμο του TimeDaily
+        },
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       setSnackbar({ open: true, message: "Ο agent αποσυνδέθηκε!", severity: "success" });
-      fetchSessions();
+      fetchSessions(); // Refresh της λίστας
     } catch (err) {
+      console.error(err);
       setSnackbar({ open: true, message: "Αποτυχία force logout.", severity: "error" });
     }
   };
 
   return (
     <Box p={2}>
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom fontWeight="bold">
         👀 Παρακολούθηση Ενεργών Agent Sessions
       </Typography>
-      <Paper elevation={3} sx={{ p: 2 }}>
+      <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
         {loading ? (
-          <CircularProgress />
+          <Box display="flex" justifyContent="center" p={3}>
+             <CircularProgress />
+          </Box>
         ) : (
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Agent</TableCell>
-                <TableCell>Ονοματεπώνυμο</TableCell>
-                <TableCell>Project</TableCell>
-                <TableCell>Ώρα Login</TableCell>
-                <TableCell>Force Logout</TableCell>
+                <TableCell><strong>Agent</strong></TableCell>
+                <TableCell><strong>Ονοματεπώνυμο</strong></TableCell>
+                <TableCell><strong>Project</strong></TableCell>
+                <TableCell><strong>Ώρα Login</strong></TableCell>
+                <TableCell><strong>Ενέργειες</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -81,18 +87,18 @@ const AgentMonitor = () => {
               ) : (
                 sessions.map((session) => (
                   <TableRow key={session._id}>
-                    <TableCell>{session.username || session.userId?.username}</TableCell>
-                    <TableCell>{session.fullName || session.userId?.fullName}</TableCell>
-                    <TableCell>{session.project || session.userId?.project}</TableCell>
+                    <TableCell>{session.username || session.userId?.username || "Unknown"}</TableCell>
+                    <TableCell>{session.fullName || session.userId?.fullName || "-"}</TableCell>
+                    <TableCell>{session.project || session.userId?.project || "-"}</TableCell>
                     <TableCell>
                       {session.loginAt ? dayjs(session.loginAt).format("DD/MM/YYYY HH:mm") : "-"}
                     </TableCell>
                     <TableCell>
                       <Button
-                        variant="outlined"
+                        variant="contained"
                         color="error"
-                        onClick={() => handleForceLogout(session._id, session.userId?._id || session.userId)}
                         size="small"
+                        onClick={() => handleForceLogout(session._id, session.userId?._id || session.userId)}
                       >
                         Force Logout
                       </Button>
@@ -108,8 +114,9 @@ const AgentMonitor = () => {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert severity={snackbar.severity} variant="filled">
+        <Alert severity={snackbar.severity} variant="filled" onClose={() => setSnackbar({ ...snackbar, open: false })}>
           {snackbar.message}
         </Alert>
       </Snackbar>

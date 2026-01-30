@@ -59,6 +59,7 @@ router.post("/logout", protect, async (req, res) => {
     const userId = req.user._id;
     const now = new Date();
 
+    // Κλείσιμο Sessions
     const latestLog = await LoginLog.findOne({
       userId: userId,
       logoutAt: { $exists: false }
@@ -70,6 +71,7 @@ router.post("/logout", protect, async (req, res) => {
       await latestLog.save();
     }
 
+    // Κλείσιμο TimeDaily
     await forceCloseDay(userId);
 
     res.json({ message: "Logged out successfully" });
@@ -88,6 +90,7 @@ router.post("/logout-beacon", async (req, res) => {
     }
 
     const now = new Date();
+    // Κλείνουμε το session
     const latestLog = await LoginLog.findOne({
       userId,
       logoutAt: { $exists: false },
@@ -99,6 +102,7 @@ router.post("/logout-beacon", async (req, res) => {
       await latestLog.save();
     }
 
+    // Κλείνουμε και τη μέρα για ασφάλεια
     await forceCloseDay(userId);
 
     res.json({ message: "Beacon logout processed" });
@@ -148,6 +152,8 @@ router.post("/force-close-inactive-sessions", async (req, res) => {
       log.logoutAt = now;
       log.duration = Math.round((now - log.loginAt) / 60000);
       await log.save();
+      
+      // Κλείνουμε και τη μέρα του συγκεκριμένου χρήστη
       await forceCloseDay(log.userId);
       closedCount++;
     }
@@ -157,10 +163,9 @@ router.post("/force-close-inactive-sessions", async (req, res) => {
   }
 });
 
-// ✅ 6. OPEN SESSIONS (Για το Agent Monitor)
+// 6. OPEN SESSIONS (Agent Monitor)
 router.get("/open-sessions", protect, async (req, res) => {
   try {
-    // Επιστρέφουμε όλα τα logs που δεν έχουν logoutAt
     const openSessions = await LoginLog.find({
       logoutAt: { $exists: false }
     }).populate("userId", "username fullName role project");
@@ -172,28 +177,105 @@ router.get("/open-sessions", protect, async (req, res) => {
   }
 });
 
-// ✅ 7. FORCE LOGOUT (Για το Agent Monitor - Admin Button)
+// ✅ 7. FORCE LOGOUT (ΔΙΟΡΘΩΜΕΝΟ)
+// Κλείνει ΟΛΑ τα active sessions του χρήστη και τερματίζει το TimeDaily
 router.post("/force-logout", protect, async (req, res) => {
   try {
     const { userId } = req.body || {};
-    if (!userId) return res.status(400).json({ message: "UserId required" });
+    
+    if (!userId) {
+        return res.status(400).json({ message: "UserId required" });
+    }
 
     const now = new Date();
 
-    // Κλείσιμο Sessions
-    await LoginLog.updateMany(
-      { userId: userId, logoutAt: { $exists: false } },
-      { $set: { logoutAt: now } }
+    // 1. Κλείνουμε ΟΛΑ τα ανοιχτά sessions αυτού του χρήστη (ανεξαρτήτως logId)
+    // Αυτό λύνει το πρόβλημα με τους Admins που έχουν πολλαπλά sessions
+    const result = await LoginLog.updateMany(
+      { userId: userId, logoutAt: { $exists: false } }, 
+      { 
+        $set: { 
+          logoutAt: now,
+          // Υπολογισμός διάρκειας κατά προσέγγιση (γιατί το updateMany δεν επιτρέπει dynamic calc εύκολα χωρίς aggregation pipeline)
+          // Αλλά για force logout αρκεί να κλείσει.
+        } 
+      }
     );
 
-    // Κλείσιμο TimeDaily
+    // 2. Κλείσιμο TimeDaily (Τερματισμός Εργασίας)
     await forceCloseDay(userId);
 
-    res.json({ message: "User force logged out successfully" });
+    console.log(`🔌 Admin force-logged out user ${userId}. Closed ${result.modifiedCount} sessions.`);
+    res.json({ message: `User force logged out successfully. Closed ${result.modifiedCount} sessions.` });
   } catch (err) {
     console.error("❌ /force-logout error:", err);
     res.status(500).json({ error: err.message });
   }
 });
+// ✅ 8. AUTO-CLOSE PAST DAYS (Για ξεχασμένα Logouts προηγούμενων ημερών)
+// Αυτό πρέπει να καλείται μία φορά την ημέρα (π.χ. στις 00:05) ή μαζί με το inactive sessions cron
+router.post("/auto-close-past-days", async (req, res) => {
+  try {
+    // 1. Βρίσκουμε τη σημερινή ημερομηνία
+    const todayStr = DateTime.now().setZone(TZ).toFormat("yyyy-MM-dd");
+
+    // 2. Βρίσκουμε όλα τα logs που ΔΕΝ είναι σημερινά και είναι ακόμα ανοιχτά
+    const stuckLogs = await TimeDaily.find({
+      dateKey: { $ne: todayStr }, // Όχι σημερινό
+      status: { $in: ["WORKING", "BREAK"] } // Είναι ακόμα ανοιχτό
+    });
+
+    let closedCount = 0;
+
+    for (const log of stuckLogs) {
+      // Υπολογίζουμε το τέλος της ημέρας εκείνης (23:59:59)
+      // Προσοχή: Το dateKey είναι string "YYYY-MM-DD"
+      // Φτιάχνουμε ημερομηνία τέλους ημέρας σε Athens Zone
+      const endOfDay = DateTime.fromFormat(log.dateKey, "yyyy-MM-dd", { zone: TZ })
+        .endOf("day")
+        .toJSDate();
+
+      let elapsed = 0;
+      if (log.lastActionAt) {
+        // Υπολογίζουμε χρόνο από την τελευταία ενέργεια μέχρι το τέλος της ημέρας
+        elapsed = endOfDay.getTime() - new Date(log.lastActionAt).getTime();
+        // Ασφάλεια: Αν για κάποιο λόγο βγει αρνητικό, το κάνουμε 0
+        if (elapsed < 0) elapsed = 0;
+      }
+
+      if (log.status === "WORKING") {
+        log.storedWorkMs += elapsed;
+      } else if (log.status === "BREAK") {
+        log.storedBreakMs += elapsed;
+      }
+
+      log.status = "CLOSED";
+      log.lastLogoutAt = endOfDay; // Το κλείνουμε στις 23:59:59
+      log.lastActionAt = endOfDay;
+      
+      log.logs.push({ 
+        action: "AUTO_CLOSE_MIDNIGHT", 
+        timestamp: new Date(), // Καταγράφουμε πότε τρέξαμε το script (τώρα)
+        details: "Closed automatically because day passed"
+      });
+
+      await log.save();
+      
+      // Κλείνουμε και το LoginLog session αν υπάρχει ξεχασμένο
+      await LoginLog.updateMany(
+        { userId: log.userId, logoutAt: { $exists: false } },
+        { $set: { logoutAt: endOfDay } }
+      );
+
+      closedCount++;
+    }
+
+    res.json({ message: `Auto-closed ${closedCount} past day logs.` });
+  } catch (err) {
+    console.error("❌ Error in auto-close-past-days:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 module.exports = router;
