@@ -1,24 +1,24 @@
 const express = require("express");
 const router = express.Router();
 const timeController = require("../controllers/timeController");
-const authMiddleware = require("../middleware/authMiddleware"); 
 
-// Διασφάλιση ότι πήραμε το 'protect' σωστά
-const protect = authMiddleware.protect;
+// 👇 ΔΙΟΡΘΩΣΗ: Κάνουμε import ΚΑΙ τα δύο middleware
+const { protect, isAdmin } = require("../middleware/authMiddleware"); 
 
-// DEBUGGING: Αν αυτό τυπώσει 'undefined' στο τερματικό, υπάρχει θέμα στο authMiddleware.js
-console.log("--> TimeRoutes: Protect Middleware is:", typeof protect); 
-
-if (typeof protect !== 'function') {
-    console.error("❌ CRITICAL ERROR: 'protect' middleware is NOT a function. Check middleware/authMiddleware.js exports!");
+// Debugging για σιγουριά
+if (!protect || !isAdmin) {
+    console.error("❌ CRITICAL ERROR: Auth middlewares are missing. Check middleware/authMiddleware.js");
 }
 
-// Routes
-// Χρησιμοποιούμε το protect ΜΟΝΟ αν είναι function, αλλιώς θα σκάσει
-if (typeof protect === 'function') {
-    router.get("/today", protect, timeController.getTodayStatus);
-    router.post("/action", protect, timeController.handleAction);
-    router.get("/history", protect, timeController.getHistory);
-}
+// --- USER ROUTES ---
+router.get("/today", protect, timeController.getTodayStatus);
+router.post("/action", protect, timeController.handleAction);
+router.get("/history", protect, timeController.getHistory);
+
+// --- ADMIN ROUTES ---
+// Τώρα το 'isAdmin' υπάρχει και δεν θα πετάει error
+router.get("/admin/active-users", protect, isAdmin, timeController.getActiveUsers);
+router.get("/admin/logs", protect, isAdmin, timeController.getAllLogs);
+router.put("/admin/log/:id", protect, isAdmin, timeController.updateLog);
 
 module.exports = router;

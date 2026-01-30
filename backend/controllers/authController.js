@@ -43,7 +43,7 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ username });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
-    // 👉 Έλεγχος αν υπάρχει ήδη ενεργό session (loginLog χωρίς logoutAt)
+    // Έλεγχος active session
     const existingSession = await LoginLog.findOne({
       userId: user._id,
       logoutAt: { $exists: false }
@@ -51,7 +51,7 @@ exports.login = async (req, res) => {
 
     if (existingSession && user.role !== "admin") {
       return res.status(403).json({
-        message: "Υπάρχει ήδη ενεργή συνεδρία για αυτό το όνομα χρήστη. Μόνο ένα session επιτρέπεται κάθε φορά."
+        message: "Υπάρχει ήδη ενεργή συνεδρία. Μόνο ένα session επιτρέπεται."
       });
     }
 
@@ -59,24 +59,13 @@ exports.login = async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign(
-      {
-        userId: user._id,
-        role: user.role,
-        project: user.project,
-      },
+      { userId: user._id, role: user.role, project: user.project },
       process.env.JWT_SECRET,
       { expiresIn: "8h" }
     );
 
-    // 🐞 LOG εδώ:
-    console.log("✅ Login attempt for user:", user.username);
-
-    // 🐞 DEBUG τιμές που σπάνε συχνά:
-    console.log("project:", user.project);
-    console.log("fullName:", user.fullName);
-
+    // Καταγραφή Login
     const now = new Date();
-
     await LoginLog.create({
       userId: user._id,
       username: user.username,
@@ -86,7 +75,7 @@ exports.login = async (req, res) => {
       lastSeen: now
     });
 
-    // ✅ Time Tracking: δημιουργεί/κρατάει το first login της ημέρας (Europe/Athens)
+    // ✅ Time Tracking Fix: Αρχικοποίηση με status: "CLOSED"
     const dateKey = DateTime.fromJSDate(now).setZone(TZ).toFormat("yyyy-LL-dd");
 
     await TimeDaily.findOneAndUpdate(
@@ -96,12 +85,11 @@ exports.login = async (req, res) => {
           userId: user._id,
           dateKey,
           firstLoginAt: now,
-          status: "open",
-          breakMs: 0,
-          totalPresenceMs: 0,
-          workingMs: 0,
-          breakOpenAt: null,
-          lastLogoutAt: null
+          status: "CLOSED", // 👈 ΑΥΤΟ ΗΤΑΝ ΤΟ ΠΡΟΒΛΗΜΑ (ήταν "open")
+          storedWorkMs: 0,  // 👈 ΝΕΟ ΠΕΔΙΟ
+          storedBreakMs: 0, // 👈 ΝΕΟ ΠΕΔΙΟ
+          lastLogoutAt: null,
+          lastActionAt: null
         }
       },
       { upsert: true, new: true }

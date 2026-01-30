@@ -24,6 +24,7 @@ const getTodayDoc = async (userId) => {
   return doc;
 };
 
+
 // GET: Φέρνει την κατάσταση της ημέρας
 exports.getTodayStatus = async (req, res) => {
   try {
@@ -120,6 +121,118 @@ exports.getHistory = async (req, res) => {
     res.json(logs);
   } catch (err) {
     console.error("Error in getHistory:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// ... (τα υπόλοιπα imports και functions παραμένουν ως έχουν)
+const User = require("../models/User"); // Βεβαιώσου ότι έχεις κάνει import το User
+
+// --- ADMIN FUNCTIONS ---
+
+// 1. Λήψη όλων των χρηστών (για το dropdown)
+exports.getActiveUsers = async (req, res) => {
+  try {
+    const users = await User.find({}, "fullName _id project").sort({ fullName: 1 });
+    res.json({ users });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 2. Λήψη Logs με φίλτρα
+exports.getAllLogs = async (req, res) => {
+  try {
+    const { startDate, endDate, userIds } = req.query;
+    
+    let query = {};
+
+    // Φίλτρο Ημερομηνίας
+    if (startDate && endDate) {
+       query.dateKey = { $gte: startDate, $lte: endDate };
+    } else if (startDate) {
+       query.dateKey = { $gte: startDate }; // Από μια ημ/νια και μετά
+    } else {
+       // Default: Τρέχων μήνας αν δεν επιλέξει τίποτα (για να μην κρασάρει από όγκο δεδομένων)
+       const startOfMonth = DateTime.now().setZone(TZ).startOf('month').toFormat("yyyy-MM-dd");
+       query.dateKey = { $gte: startOfMonth };
+    }
+
+    // Φίλτρο Χρηστών
+    if (userIds && userIds !== "all") {
+      const idsArray = userIds.split(",");
+      query.userId = { $in: idsArray };
+    }
+
+    const logs = await TimeDaily.find(query)
+      .populate("userId", "fullName username project")
+      .sort({ dateKey: -1 }); // Φθίνουσα ταξινόμηση (νεότερα πρώτα)
+
+    // Υπολογισμός τελικών χρόνων (αν κάποιος είναι ακόμα Working, προσθέτουμε τον χρόνο που πέρασε)
+    const processedLogs = logs.map(doc => {
+        const log = doc.toObject();
+        if (log.status === "WORKING" && log.lastActionAt) {
+             const now = new Date().getTime();
+             const elapsed = now - new Date(log.lastActionAt).getTime();
+             log.workingMs = (log.storedWorkMs || 0) + elapsed; // Προσωρινός υπολογισμός για εμφάνιση
+             log.breakMs = log.storedBreakMs || 0;
+             log.totalPresenceMs = log.workingMs + log.breakMs;
+        } else if (log.status === "BREAK" && log.lastActionAt) {
+             const now = new Date().getTime();
+             const elapsed = now - new Date(log.lastActionAt).getTime();
+             log.workingMs = log.storedWorkMs || 0;
+             log.breakMs = (log.storedBreakMs || 0) + elapsed;
+             log.totalPresenceMs = log.workingMs + log.breakMs;
+        } else {
+             // Closed logs
+             log.workingMs = log.storedWorkMs || 0;
+             log.breakMs = log.storedBreakMs || 0;
+             log.totalPresenceMs = log.workingMs + log.breakMs;
+        }
+        return log;
+    });
+
+    res.json({ logs: processedLogs });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 3. Update Log (Edit από Admin)
+exports.updateLog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Προσθέσαμε τα firstLoginAt και lastLogoutAt
+    const { status, storedWorkMs, storedBreakMs, dateKey, firstLoginAt, lastLogoutAt } = req.body;
+
+    const log = await TimeDaily.findById(id);
+    if (!log) return res.status(404).json({ message: "Log not found" });
+
+    log.status = status;
+    log.storedWorkMs = storedWorkMs;
+    log.storedBreakMs = storedBreakMs;
+    log.dateKey = dateKey;
+    
+    // ✅ Ενημέρωση των timestamps (αν υπάρχουν)
+    if (firstLoginAt) log.firstLoginAt = new Date(firstLoginAt);
+    if (lastLogoutAt) log.lastLogoutAt = new Date(lastLogoutAt);
+
+    // Αν γυρίσει σε CLOSED, κλείνουμε τα actions
+    if (status === "CLOSED") {
+        log.lastActionAt = new Date(); 
+    }
+
+    log.logs.push({ 
+        action: "ADMIN_EDIT", 
+        timestamp: new Date(), 
+        details: `Updated by Admin` 
+    });
+
+    await log.save();
+    res.json(log);
+
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
