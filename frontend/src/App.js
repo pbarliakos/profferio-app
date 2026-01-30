@@ -9,8 +9,8 @@ import Alterlife from "./pages/Alterlife";
 import Other from "./pages/Other";
 import AdminDashboard from "./pages/AdminDashboard";
 import Nova from "./pages/Nova";
-// 👇 ΔΙΟΡΘΩΣΗ: Πλέον δείχνει στο σωστό αρχείο MyTime.js
 import MyTime from "./pages/MyTime"; 
+import UserDashboard from "./pages/UserDashboard"; // ✅ Import Dashboard
 
 // Admin Σελίδες
 import AdminTimeLogs from "./pages/admin/AdminTimeLogs";
@@ -22,7 +22,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
-// ✅ Axios Interceptor: Βάζει αυτόματα το token σε κάθε αίτημα
 axios.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -37,18 +36,15 @@ axios.interceptors.request.use(
 );
 
 function App() {
-  // ✅ Φόρτωση του theme
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem("theme");
     return savedTheme ? savedTheme === "dark" : true; 
   });
 
-  // ✅ Αποθήκευση της προτίμησης theme
   useEffect(() => {
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  // ✅ Καταγραφή logout όταν κλείνει το tab
   useEffect(() => {
     const rawUser = localStorage.getItem("user");
     if (!rawUser) return;
@@ -65,7 +61,6 @@ function App() {
     return () => window.removeEventListener("beforeunload", handleUnload);
   }, []);
 
-  // ✅ Heartbeat timer
   useEffect(() => {
     const rawUser = localStorage.getItem("user");
     if (!rawUser) return;
@@ -102,8 +97,14 @@ function App() {
             <Route path="/admin/AgentMonitor" element={<AgentMonitor darkMode={darkMode} />} />
           </Route>
 
-          {/* 🛡️ Time Project Route */}
-          <Route element={<ProtectedRoute allowedProject="time" />}>
+          {/* ✅ DASHBOARD ROUTE (Για όλους τους logged in χρήστες) */}
+          <Route element={<ProtectedRoute />}>
+             <Route path="/dashboard" element={<UserDashboard darkMode={darkMode} setDarkMode={setDarkMode} />} />
+          </Route>
+
+          {/* ✅ TIME TRACKER ROUTE (Επιτρέπουμε πρόσβαση σε όλους, ή συγκεκριμένα projects) */}
+          {/* Αφαιρέσαμε το strict allowedProject="time" για να μπαίνουν και οι Epic/Nova */}
+          <Route element={<ProtectedRoute />}>
             <Route path="/my-time" element={<MyTime darkMode={darkMode} setDarkMode={setDarkMode} />} />
           </Route>
 
@@ -111,6 +112,7 @@ function App() {
             <Route path="/alterlife" element={<Alterlife />} />
           </Route>
 
+          {/* Η Nova είναι ΟΚ με allowedProject="nova" */}
           <Route element={<ProtectedRoute allowedProject="nova" />}>
             <Route path="/nova" element={<Nova />} />
           </Route>

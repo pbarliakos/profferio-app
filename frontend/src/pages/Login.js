@@ -21,17 +21,13 @@ const Login = ({ darkMode, setDarkMode }) => {
       localStorage.setItem("role", user.role);
       localStorage.setItem("project", user.project);
 
+      // ✅ ΝΕΑ ΛΟΓΙΚΗ REDIRECT
       if (user.role === "admin") {
         navigate("/admin");
-        return;
+      } else {
+        // Όλοι οι άλλοι ρόλοι και projects πάνε στο Dashboard
+        navigate("/dashboard");
       }
-
-      const routes = {
-        time: "/my-time",
-        alterlife: "/alterlife",
-        nova: "/nova"
-      };
-      navigate(routes[user.project] || "/other");
       
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
@@ -43,12 +39,12 @@ const Login = ({ darkMode, setDarkMode }) => {
       minHeight: "100vh", 
       position: "relative", 
       display: "flex", 
-      alignItems: "center", // Κρατάμε το κέντρο
+      alignItems: "center",
       justifyContent: "center",
       bgcolor: "background.default"
     }}>
       
-      {/* Theme Toggle - Πάνω δεξιά */}
+      {/* Theme Toggle */}
       <Box sx={{ position: "absolute", top: 20, right: 20 }}>
         <Tooltip title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}>
           <IconButton 
@@ -61,7 +57,6 @@ const Login = ({ darkMode, setDarkMode }) => {
         </Tooltip>
       </Box>
 
-      {/* ✅ Το Container με το αρνητικό marginTop για να ανέβει πιο πάνω */}
       <Container maxWidth="xs" sx={{ mt: -20 }}> 
         <LogoHeader />
         <Paper elevation={6} sx={{ p: 4, mt: 4, borderRadius: 3 }}>
