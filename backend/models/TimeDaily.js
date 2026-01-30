@@ -2,7 +2,11 @@ const mongoose = require("mongoose");
 
 const timeDailySchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  userFullName: { type: String }, // 👈 ΝΕΟ ΠΕΔΙΟ: Κρατάει το όνομα "καρφωτά"
+  userFullName: { type: String }, 
+  
+  // ✅ ΝΕΟ ΠΕΔΙΟ (Snapshot της εταιρείας την ημέρα εργασίας)
+  userCompany: { type: String },
+
   dateKey: { type: String, required: true },
   
   status: { 
@@ -10,12 +14,15 @@ const timeDailySchema = new mongoose.Schema({
     enum: ["WORKING", "BREAK", "CLOSED"], 
     default: "CLOSED" 
   },
-  // ... τα υπόλοιπα πεδία μένουν ίδια
+
   firstLoginAt: { type: Date },
   lastLogoutAt: { type: Date },
+
   storedWorkMs: { type: Number, default: 0 },
   storedBreakMs: { type: Number, default: 0 },
+
   lastActionAt: { type: Date },
+
   logs: [{
     action: String, 
     timestamp: Date,

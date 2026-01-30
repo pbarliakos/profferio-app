@@ -1,27 +1,31 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const User = require("../models/User");
 const { protect, isAdmin } = require("../middleware/authMiddleware");
 
-
-// GET: όλοι οι χρήστες
+// 1. GET ALL USERS (Admin Only)
 router.get("/", protect, isAdmin, async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    // Φέρνουμε όλους τους χρήστες (χωρίς το password)
+    const users = await User.find({}).select("-password").sort({ createdAt: -1 });
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST: δημιουργία χρήστη
+// 2. CREATE USER (Admin Only)
 router.post("/", protect, isAdmin, async (req, res) => {
   try {
-    const { fullName, username, email, password, role, project } = req.body;
+    // ✅ Προσθήκη του 'company' στο destructuring
+    const { fullName, username, email, password, role, project, company } = req.body;
 
+    // Έλεγχος αν υπάρχει ήδη
     const existingUser = await User.findOne({ username });
-    if (existingUser) return res.status(400).json({ message: "Username already exists" });
+    if (existingUser) {
+      return res.status(400).json({ message: "Το Username χρησιμοποιείται ήδη" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -32,48 +36,71 @@ router.post("/", protect, isAdmin, async (req, res) => {
       password: hashedPassword,
       role,
       project,
+      company: company || "Othisi" // Default τιμή αν ξεχαστεί
     });
 
     await newUser.save();
-
-    res.status(201).json({ message: "User created" });
+    res.status(201).json(newUser);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Create User Error:", err);
+    res.status(500).json({ message: "Αποτυχία δημιουργίας χρήστη", error: err.message });
   }
 });
 
-// PUT: επεξεργασία χρήστη
+// 3. UPDATE USER (Admin Only)
 router.put("/:id", protect, isAdmin, async (req, res) => {
   try {
-    const { fullName, username, email, password, role, project } = req.body;
-
+    const { fullName, username, email, role, project, password, company } = req.body;
+    
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ message: "Ο χρήστης δεν βρέθηκε" });
+    }
 
-    user.fullName = fullName;
-    user.username = username;
-    user.email = email;
-    user.role = role;
-    user.project = project;
+    // Ενημέρωση πεδίων
+    user.fullName = fullName || user.fullName;
+    user.username = username || user.username;
+    user.email = email || user.email;
+    user.role = role || user.role;
+    user.project = project || user.project;
+    
+    // ✅ Ενημέρωση Company
+    if (company) {
+        user.company = company;
+    }
 
-    if (password) {
+    // Ενημέρωση κωδικού ΜΟΝΟ αν έχει συμπληρωθεί νέος
+    if (password && password.trim() !== "") {
       user.password = await bcrypt.hash(password, 10);
     }
 
-    await user.save();
+    const updatedUser = await user.save();
+    
+    // Επιστρέφουμε τον χρήστη χωρίς το password
+    updatedUser.password = undefined;
+    res.json(updatedUser);
 
-    res.json({ message: "User updated" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Update User Error:", err);
+    res.status(500).json({ message: "Αποτυχία ενημέρωσης χρήστη", error: err.message });
   }
 });
 
-// DELETE: διαγραφή χρήστη
+// 4. DELETE USER (Admin Only)
 router.delete("/:id", protect, isAdmin, async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "Ο χρήστης δεν βρέθηκε" });
+    }
 
-    res.json({ message: "User deleted" });
+    // Αποφυγή διαγραφής του εαυτού μας (προαιρετικό αλλά καλό)
+    if (user._id.toString() === req.user._id.toString()) {
+        return res.status(400).json({ message: "Δεν μπορείτε να διαγράψετε τον εαυτό σας" });
+    }
+
+    await user.deleteOne();
+    res.json({ message: "Ο χρήστης διαγράφηκε" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

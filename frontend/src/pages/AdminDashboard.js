@@ -20,7 +20,7 @@ import { Delete, Edit, Add, Logout, OpenInNew as OpenInNewIcon, People as People
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-// Σταθερά δεδομένα εκτός component για αποφυγή περιττών renders
+// Σταθερά δεδομένα εκτός component
 const projectButtons = [
   { label: "Alterlife", path: "/alterlife" },
   { label: "Nova", path: "/nova" },
@@ -32,6 +32,8 @@ const projectButtons = [
 const AdminDashboard = ({ darkMode, setDarkMode }) => {
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
+  
+  // ✅ Ενημερωμένο state με το πεδίο company
   const [newUser, setNewUser] = useState({
     fullName: "",
     username: "",
@@ -39,7 +41,9 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
     password: "",
     role: "user",
     project: "alterlife",
+    company: "Othisi" // Default τιμή
   });
+
   const [openDialog, setOpenDialog] = useState(false);
   const [search, setSearch] = useState("");
   const [snackbar, setSnackbar] = useState("");
@@ -49,7 +53,7 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
   const userInfo = JSON.parse(localStorage.getItem("user")) || {};
   const { fullName, role } = userInfo;
 
-  // ✅ Fetch Users - Σταθερή συνάρτηση
+  // ✅ Fetch Users
   const fetchUsers = useCallback(async () => {
     try {
       const res = await axios.get("/api/users", {
@@ -65,7 +69,7 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
     fetchUsers();
   }, [fetchUsers]);
 
-  // ✅ 1. Υπολογισμός Στατιστικών με useMemo (Υπολογίζεται ΜΟΝΟ όταν αλλάζει η λίστα users)
+  // ✅ Stats Calculation
   const stats = useMemo(() => {
     const total = users.length;
     const projects = users.reduce((acc, user) => {
@@ -79,15 +83,16 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
     return { total, projects, roles };
   }, [users]);
 
-  // ✅ 2. Φιλτράρισμα Χρηστών με useMemo (Δεν "κολλάει" την πληκτρολόγηση στη φόρμα)
+  // ✅ Filtering
   const filteredUsers = useMemo(() => {
     return users.filter((u) =>
-      `${u.username} ${u.fullName} ${u.email}`.toLowerCase().includes(search.toLowerCase())
+      `${u.username} ${u.fullName} ${u.email} ${u.company}`.toLowerCase().includes(search.toLowerCase())
     );
   }, [users, search]);
 
   const handleEdit = useCallback((user) => {
     setEditingUser(user);
+    // Φέρνουμε όλα τα πεδία, το company θα έρθει από το user object αν υπάρχει
     setNewUser({ ...user, password: "" });
     setOpenDialog(true);
   }, []);
@@ -118,6 +123,7 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
       fetchUsers();
     } catch (err) {
       setSnackbar("Σφάλμα κατά την αποθήκευση");
+      console.error(err);
     }
   };
 
@@ -136,10 +142,11 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
     }
   };
 
+  // ✅ Updated Export with Company
   const handleExport = () => {
     if (!users.length) return;
-    const headers = ["Full Name", "Username", "Email", "Role", "Project"];
-    const rows = users.map(u => [u.fullName, u.username, u.email, u.role, u.project]);
+    const headers = ["Full Name", "Username", "Email", "Role", "Project", "Company"];
+    const rows = users.map(u => [u.fullName, u.username, u.email, u.role, u.project, u.company || "-"]);
     const csvContent = [
       headers.join(","),
       ...rows.map(r => r.map(field => `"${field}"`).join(","))
@@ -154,11 +161,12 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
     document.body.removeChild(link);
   };
 
-  // ✅ 3. Ορισμός Στηλών με useMemo (Σταθερότητα DataGrid)
+  // ✅ Updated Columns with Company
   const columns = useMemo(() => [
     { field: "fullName", headerName: "Ονοματεπώνυμο", flex: 1 },
     { field: "username", headerName: "Username", flex: 1 },
     { field: "email", headerName: "Email", flex: 1 },
+    { field: "company", headerName: "Εταιρεία", flex: 1 }, // Νέα Στήλη
     { field: "role", headerName: "Ρόλος", flex: 1 },
     { field: "project", headerName: "Project", flex: 1 },
     {
@@ -201,7 +209,7 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
         </Box>
       </Box>
 
-      {/* STATS SECTION - 144 Users Performance Optimized */}
+      {/* STATS SECTION */}
       <Box display="flex" gap={2} flexWrap="wrap" mb={4}>
         <StatCard title="Σύνολο Χρηστών" value={stats.total} icon={<PeopleIcon color="primary" />} bgcolor="#e3f2fd" />
         <StatCard title="Χρήστες ανά Project" 
@@ -215,13 +223,23 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
       {/* CONTROLS SECTION */}
       <Box display="flex" gap={2} mb={2}>
         <TextField label="Αναζήτηση" fullWidth value={search} onChange={(e) => setSearch(e.target.value)} />
-        <Button variant="contained" startIcon={<Add />} onClick={() => { setEditingUser(null); setNewUser({ fullName: "", username: "", email: "", password: "", role: "user", project: "alterlife" }); setOpenDialog(true); }} sx={{ minWidth: 180 }}>
+        <Button 
+            variant="contained" 
+            startIcon={<Add />} 
+            onClick={() => { 
+                setEditingUser(null); 
+                // Reset form με το νέο default company
+                setNewUser({ fullName: "", username: "", email: "", password: "", role: "user", project: "alterlife", company: "Othisi" }); 
+                setOpenDialog(true); 
+            }} 
+            sx={{ minWidth: 180 }}
+        >
           Νεος Χρηστης
         </Button>
         <Button variant="outlined" onClick={handleExport} sx={{ minWidth: 150 }}>Export Users</Button>
       </Box>
 
-      {/* DATAGRID - Performance Fix */}
+      {/* DATAGRID */}
       <Box sx={{ width: '100%' }}>
         <DataGrid
           rows={filteredUsers}
@@ -234,7 +252,7 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
         />
       </Box>
 
-      {/* DIALOG CREATE/EDIT - Accessibility Fix (id added) */}
+      {/* DIALOG CREATE/EDIT */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{editingUser ? "Επεξεργασία Χρήστη" : "Νέος Χρήστης"}</DialogTitle>
         <DialogContent>
@@ -242,17 +260,36 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
           <TextField id="username" label="Username" fullWidth margin="dense" value={newUser.username} onChange={(e) => setNewUser({ ...newUser, username: e.target.value })} />
           <TextField id="email" label="Email" fullWidth margin="dense" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
           <TextField id="password" label="Password" fullWidth margin="dense" type="password" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} />
+          
+          {/* ✅ ΝΕΟ ΠΕΔΙΟ: COMPANY */}
+          <TextField select label="Εταιρεία" fullWidth margin="dense" value={newUser.company} onChange={(e) => setNewUser({ ...newUser, company: e.target.value })}>
+            <MenuItem value="Othisi">Othisi</MenuItem>
+            <MenuItem value="Infovest">Infovest</MenuItem>
+            <MenuItem value="Infosale">Infosale</MenuItem>
+            <MenuItem value="Korcavest">Korcavest</MenuItem>
+            <MenuItem value="Gemini">Gemini</MenuItem>
+            <MenuItem value="Kontakt">Kontakt</MenuItem>
+          </TextField>
+
+          {/* ✅ ΕΝΗΜΕΡΩΜΕΝΟΙ ΡΟΛΟΙ */}
           <TextField select label="Ρόλος" fullWidth margin="dense" value={newUser.role} onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}>
             <MenuItem value="admin">Admin</MenuItem>
             <MenuItem value="manager">Manager</MenuItem>
             <MenuItem value="user">User</MenuItem>
+            <MenuItem value="Backoffice">Backoffice</MenuItem>
+            <MenuItem value="Team Leader">Team Leader</MenuItem>
           </TextField>
+
+          {/* ✅ ΕΝΗΜΕΡΩΜΕΝΑ PROJECTS */}
           <TextField select label="Project" fullWidth margin="dense" value={newUser.project} onChange={(e) => setNewUser({ ...newUser, project: e.target.value })}>
             <MenuItem value="alterlife">Alterlife</MenuItem>
             <MenuItem value="nova">Nova</MenuItem>
             <MenuItem value="admin">Admin</MenuItem>
             <MenuItem value="time">TimeTrack</MenuItem>
             <MenuItem value="other">Other</MenuItem>
+            <MenuItem value="Epic">Epic</MenuItem>
+            <MenuItem value="Instacar">Instacar</MenuItem>
+            <MenuItem value="Nova FTTH">Nova FTTH</MenuItem>
           </TextField>
         </DialogContent>
         <DialogActions>
@@ -266,7 +303,6 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
   );
 };
 
-// Helper Component για τα Stats Cards
 const StatCard = ({ title, value, icon, bgcolor }) => (
   <Paper sx={{ flex: 1, minWidth: 220, p: 3, display: "flex", alignItems: "center", gap: 2, bgcolor, borderRadius: 2 }} elevation={3}>
     {icon}

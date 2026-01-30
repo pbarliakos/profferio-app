@@ -2,16 +2,16 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const LoginLog = require("../models/LoginLog");
-
-// ✅ Time Tracking (NEW)
 const TimeDaily = require("../models/TimeDaily");
 const { DateTime } = require("luxon");
+
 const TZ = "Europe/Athens";
 
 // Register
 exports.register = async (req, res) => {
   try {
-    const { fullName, username, email, password, role, project } = req.body;
+    // ✅ Προσθήκη company στο destructuring
+    const { fullName, username, email, password, role, project, company } = req.body;
 
     const existing = await User.findOne({ username });
     if (existing) return res.status(400).json({ message: "Username already exists" });
@@ -25,6 +25,7 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       role,
       project,
+      company, // ✅ Αποθήκευση Company
     });
 
     await user.save();
@@ -64,7 +65,6 @@ exports.login = async (req, res) => {
       { expiresIn: "8h" }
     );
 
-    // Καταγραφή Login
     const now = new Date();
     await LoginLog.create({
       userId: user._id,
@@ -75,18 +75,19 @@ exports.login = async (req, res) => {
       lastSeen: now
     });
 
-    // ✅ Time Tracking Fix: Αρχικοποίηση με status: "CLOSED"
-const dateKey = DateTime.fromJSDate(now).setZone(TZ).toFormat("yyyy-LL-dd");
+    // Time Tracking Logic
+    const dateKey = DateTime.fromJSDate(now).setZone(TZ).toFormat("yyyy-LL-dd");
 
     await TimeDaily.findOneAndUpdate(
       { userId: user._id, dateKey },
       {
         $setOnInsert: {
           userId: user._id,
-          userFullName: user.fullName, // 👈 ΝΕΟ: Αποθηκεύουμε το όνομα εδώ
+          userFullName: user.fullName,
+          userCompany: user.company, // ✅ ΝΕΟ: Αποθήκευση Company στο Log ημέρας
           dateKey,
-          firstLoginAt: null,
-          status: "CLOSED",
+          firstLoginAt: null, 
+          status: "CLOSED", 
           storedWorkMs: 0,
           storedBreakMs: 0,
           lastLogoutAt: null,
@@ -104,6 +105,7 @@ const dateKey = DateTime.fromJSDate(now).setZone(TZ).toFormat("yyyy-LL-dd");
         role: user.role,
         project: user.project,
         fullName: user.fullName,
+        company: user.company // Επιστρέφουμε και την εταιρεία αν χρειαστεί
       },
     });
   } catch (err) {

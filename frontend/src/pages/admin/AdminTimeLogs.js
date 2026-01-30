@@ -10,7 +10,7 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import dayjs from "dayjs"; // Χρήσιμο για formatting ημερομηνιών
+import dayjs from "dayjs";
 
 // --- HELPERS ---
 const msToHHMMSS = (ms) => {
@@ -32,7 +32,6 @@ const HHMMSStoMs = (timeString) => {
   return (hours * 3600000) + (minutes * 60000) + (seconds * 1000);
 };
 
-// Μετατροπή Date object σε string για το input type="datetime-local" (YYYY-MM-DDTHH:mm)
 const formatDateForInput = (dateStr) => {
     if (!dateStr) return "";
     return dayjs(dateStr).format("YYYY-MM-DDTHH:mm");
@@ -56,8 +55,8 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
       status: "",
       workingTimeStr: "00:00:00",
       breakTimeStr: "00:00:00",
-      firstLoginAt: "", // datetime-local format
-      lastLogoutAt: ""  // datetime-local format
+      firstLoginAt: "",
+      lastLogoutAt: ""
   });
 
   const token = localStorage.getItem("token");
@@ -92,12 +91,13 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
 
   const handleExportCSV = () => {
     if (logs.length === 0) return;
-    // ✅ Προσθήκη Role και Project στα Headers
-    const headers = ["Ημερομηνία", "Χρήστης", "Ρόλος", "Project", "Έναρξη", "Λήξη", "Σύνολο", "Εργασία", "Διάλειμμα", "Status"];
+    // ✅ Προσθήκη Company στα Headers
+    const headers = ["Ημερομηνία", "Χρήστης", "Εταιρεία", "Ρόλος", "Project", "Έναρξη", "Λήξη", "Σύνολο", "Εργασία", "Διάλειμμα", "Status"];
     const rows = logs.map(log => [
       log.dateKey,
       log.userId?.fullName || log.userFullName || "Deleted User",
-      // ✅ Προσθήκη Role και Project στα δεδομένα Export
+      // ✅ Προσθήκη Company (Προτεραιότητα στο snapshot του log, μετά στο user profile)
+      log.userCompany || log.userId?.company || "-", 
       log.userId?.role || "-",
       log.userId?.project || "-",
       log.firstLoginAt ? dayjs(log.firstLoginAt).format("HH:mm:ss") : "-",
@@ -226,8 +226,14 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
           initialState={{ pagination: { paginationModel: { pageSize: 100 } } }}
           columns={[
             { field: "dateKey", headerName: "Ημερομηνία", width: 110 },
-            { field: "user", headerName: "Χρήστης", flex: 1, valueGetter: (params, row) => {return row?.userId?.fullName || row?.userFullName || "Διεγραμμένος Χρήστης";}},
-            // ✅ Νέες Στήλες: Role & Project
+            { field: "user", headerName: "Χρήστης", flex: 1, valueGetter: (params, row) => {return row?.userId?.fullName || row?.userFullName || "Deleted User";}},
+            // ✅ Νέα Στήλη: Company
+            { 
+              field: "company", 
+              headerName: "Εταιρεία", 
+              width: 100, 
+              valueGetter: (params, row) => row.userCompany || row?.userId?.company || "-" 
+            },
             { 
               field: "role", 
               headerName: "Ρόλος", 
@@ -262,7 +268,7 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
         />
       </Box>
 
-      {/* EDIT DIALOG */}
+      {/* EDIT DIALOG (ΙΔΙΟ ΜΕ ΠΡΙΝ) */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="sm" fullWidth>
           <DialogTitle>Επεξεργασία Log</DialogTitle>
           <DialogContent dividers>
