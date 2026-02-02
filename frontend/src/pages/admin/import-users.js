@@ -5,7 +5,6 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const csv = require("csv-parser");
 
-// MongoDB URI from .env
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
@@ -13,7 +12,7 @@ if (!MONGO_URI) {
   process.exit(1);
 }
 
-// User schema
+// User Schema (Strict: false για να περνάει τα πάντα)
 const userSchema = new mongoose.Schema({
   fullName: String,
   email: { type: String, unique: true },
@@ -21,50 +20,100 @@ const userSchema = new mongoose.Schema({
   password: String,
   role: String,
   project: String,
-});
+  company: String
+}, { strict: false });
 
 const User = mongoose.model("User", userSchema);
 
 async function importUsers() {
-  await mongoose.connect(MONGO_URI);
-  console.log("✅ Συνδέθηκε στη MongoDB");
+  try {
+    await mongoose.connect(MONGO_URI);
+    console.log(`✅ Συνδέθηκα στη βάση: ${mongoose.connection.name}`);
 
-  const results = [];
+    const results = [];
+    const csvPath = path.join(__dirname, "export-users.csv");
+    const defaultHash = await bcrypt.hash("123456", 10);
 
-  fs.createReadStream(path.join(__dirname, "export-users.csv"))
-    .pipe(csv({ separator: ";" }))
-    .on("data", (data) => results.push(data))
-    .on("end", async () => {
-      for (const userData of results) {
-        const { fullName, email, username, password, role, project } = userData;
+    fs.createReadStream(csvPath)
+      .pipe(csv({ 
+        separator: ';', 
+        mapHeaders: ({ header }) => header.trim().replace(/^\ufeff/, '').toLowerCase() 
+      })) 
+      .on("data", (data) => results.push(data))
+      .on("end", async () => {
+        
+        console.log(`📂 CSV Loaded: ${results.length} rows.`);
+        let updateCount = 0;
+        let successCount = 0;
 
-        const existing = await User.findOne({ $or: [{ email }, { username }] });
-        if (existing) {
-          console.log(`⏭️ Υπάρχει ήδη: ${username}`);
-          continue;
+        for (const row of results) {
+          const fullName = row["full name"] || row["fullname"] || row["name"];
+          const email = row["email"];
+          const username = row["username"];
+          const role = row["role"] || "user";
+          const project = row["project"] || "other";
+          
+          // Force Company
+          let company = row["company"];
+          if (!company || company.trim() === "") company = "Othisi"; 
+
+          // ✅ SAFE PASSWORD LOGIC (Για να μην σκάει το bcrypt)
+          let passwordToSave = defaultHash;
+          const rawPass = row["password"];
+          
+          if (rawPass && typeof rawPass === 'string' && rawPass.trim().length > 0) {
+             try {
+                passwordToSave = await bcrypt.hash(rawPass.trim(), 10);
+             } catch (e) {
+                console.log(`⚠️ Password error for ${username}, using default.`);
+             }
+          }
+
+          if (!username || !email) continue;
+
+          // Check if exists
+          const existing = await User.findOne({ $or: [{ email }, { username }] });
+          
+          if (existing) {
+            // FORCE UPDATE
+            await User.updateOne(
+                { _id: existing._id },
+                { 
+                    $set: { 
+                        company: company,
+                        project: project,
+                        role: role,
+                        fullName: fullName,
+                        password: passwordToSave
+                    } 
+                }
+            );
+            process.stdout.write("."); // Print dot for progress
+            updateCount++;
+          } else {
+            // CREATE
+            await User.create({
+              fullName, email, username, password: passwordToSave, role, project, company
+            });
+            console.log(`\n✅ Created: ${username}`);
+            successCount++;
+          }
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log("\n------------------------------------------------");
+        console.log(`✅ Νέοι: ${successCount}`);
+        console.log(`🔄 Ενημερώθηκαν: ${updateCount}`);
+        console.log("------------------------------------------------");
+        
+        mongoose.disconnect();
+        process.exit(0);
+      });
 
-        const newUser = new User({
-          fullName,
-          email,
-          username,
-          password: hashedPassword,
-          role,
-          project,
-        });
-
-        await newUser.save();
-        console.log(`✅ Προστέθηκε: ${username}`);
-      }
-
-      console.log("🎉 Ολοκληρώθηκε η εισαγωγή χρηστών.");
-      mongoose.disconnect();
-    });
+  } catch (err) {
+    console.error("❌ Error:", err);
+    mongoose.disconnect();
+    process.exit(1);
+  }
 }
 
-importUsers().catch((err) => {
-  console.error("❌ Σφάλμα:", err);
-  mongoose.disconnect();
-});
+importUsers();

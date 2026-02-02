@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { 
   Box, 
   Typography, 
@@ -23,6 +23,8 @@ import axios from "axios";
 const UserDashboard = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
   const theme = useTheme();
+  
+  // Διαβάζουμε τον χρήστη
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const handleLogout = async () => {
@@ -40,16 +42,15 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
   };
 
   // --- LOGIC ΓΙΑ ΤΑ TILES ---
-  const projectLower = (user.project || "").toLowerCase();
-  const roleLower = (user.role || "").toLowerCase(); // ✅ Παίρνουμε τον ρόλο
+  const projectLower = (user.project || "").toLowerCase().trim();
   
-  // 1. Time Tracker: Το βλέπουν Epic, Nova και Time
-  const showTimeTracker = projectLower.includes("epic") || projectLower.includes("nova") || projectLower.includes("time");
+  // 1. Time Tracker: "Σε όλα τα roles θα εμφανίζει το timetracker"
+  // Οπότε το κάνουμε true για όλους όσους έχουν πρόσβαση σε αυτό το Dashboard.
+  const showTimeTracker = true;
 
-  // 2. Nova FTTH: Το βλέπουν ΜΟΝΟ:
-  //    α) Project: Nova
-  //    β) Role: User ή Team Leader
-  const showNovaTool = projectLower.includes("nova") && (roleLower === "user" || roleLower === "team leader");
+  // 2. Nova FTTH: "Στο project nova θα εμφανιζει και το ftth email"
+  // Ελέγχουμε μόνο αν το project είναι "nova".
+  const showNovaTool = projectLower.includes("nova");
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4 }}>
@@ -90,7 +91,7 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
         {/* TILES GRID */}
         <Grid container spacing={4} justifyContent="center">
           
-          {/* TILE 1: TIME TRACKER (Opens in New Tab) */}
+          {/* TILE 1: TIME TRACKER (Πλέον ανοιχτό για όλους) */}
           {showTimeTracker && (
             <Grid item xs={12} sm={6} md={4}>
               <Card 
@@ -118,7 +119,7 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
             </Grid>
           )}
 
-          {/* TILE 2: NOVA FTTH (Opens in Same Tab) */}
+          {/* TILE 2: NOVA FTTH (Μόνο για Nova Project) */}
           {showNovaTool && (
             <Grid item xs={12} sm={6} md={4}>
               <Card 
@@ -144,14 +145,6 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
                 </CardActionArea>
               </Card>
             </Grid>
-          )}
-
-          {!showTimeTracker && !showNovaTool && (
-             <Grid item xs={12}>
-                <Typography align="center" variant="h6" color="text.secondary">
-                    Δεν υπάρχουν διαθέσιμα εργαλεία για το προφίλ σας.
-                </Typography>
-             </Grid>
           )}
 
         </Grid>

@@ -33,8 +33,8 @@ import axios from "axios";
 
 // Σταθερά δεδομένα εκτός component
 const projectButtons = [
-  { label: "Alterlife", path: "/alterlife" },
-  { label: "Nova", path: "/nova" },
+  { label: "Time Tracker", path: "/My-Time" },
+  { label: "Nova FTTH email", path: "/nova" },
   { label: "Agent Monitor", path: "/admin/AgentMonitor" },
   { label: "Login Logs", path: "/admin/loginlogs" },
   { label: "Time Tracker", path: "/admin/timelogs" },
