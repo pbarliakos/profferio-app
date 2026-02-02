@@ -10,7 +10,6 @@ const TZ = "Europe/Athens";
 // Register
 exports.register = async (req, res) => {
   try {
-    // ✅ Προσθήκη company στο destructuring
     const { fullName, username, email, password, role, project, company } = req.body;
 
     const existing = await User.findOne({ username });
@@ -18,14 +17,18 @@ exports.register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // ✅ FORCE LOWERCASE: Αποθηκεύουμε πάντα πεζά για να μην έχουμε θέματα
+    const normalizedRole = role ? role.toLowerCase() : "user";
+    const normalizedProject = project ? project.toLowerCase() : "other";
+
     const user = new User({
       fullName,
       username,
       email,
       password: hashedPassword,
-      role,
-      project,
-      company, // ✅ Αποθήκευση Company
+      role: normalizedRole,
+      project: normalizedProject,
+      company, // Η εταιρεία συνήθως μένει όπως είναι (π.χ. Othisi)
     });
 
     await user.save();
@@ -39,9 +42,23 @@ exports.register = async (req, res) => {
 // Login
 exports.login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    // ✅ 1. Υποστήριξη για Identifier (Email ή Username)
+    const inputIdentifier = req.body.identifier || req.body.username;
+    const { password } = req.body;
 
-    const user = await User.findOne({ username });
+    if (!inputIdentifier || !password) {
+        return res.status(400).json({ message: "Παρακαλώ εισάγετε Username/Email και Password" });
+    }
+
+    // ✅ 2. Αναζήτηση χρήστη (Case insensitive για το username/email)
+    // Χρησιμοποιούμε regex για να αγνοήσουμε κεφαλαία/μικρά στο username κατά την αναζήτηση
+    const user = await User.findOne({
+        $or: [
+            { email: { $regex: new RegExp(`^${inputIdentifier}$`, 'i') } },
+            { username: { $regex: new RegExp(`^${inputIdentifier}$`, 'i') } }
+        ]
+    });
+
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
     // Έλεγχος active session
@@ -50,7 +67,11 @@ exports.login = async (req, res) => {
       logoutAt: { $exists: false }
     });
 
-    if (existingSession && user.role !== "admin") {
+    // Επιτρέπουμε πολλαπλά sessions ΜΟΝΟ στους admins
+    // ✅ Ασφαλής έλεγχος με toLowerCase()
+    const userRole = user.role ? user.role.toLowerCase() : "user";
+    
+    if (existingSession && userRole !== "admin") {
       return res.status(403).json({
         message: "Υπάρχει ήδη ενεργή συνεδρία. Μόνο ένα session επιτρέπεται."
       });
@@ -59,17 +80,23 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
+    // ✅ Normalization για το Token και το Response
+    const userProject = user.project ? user.project.toLowerCase() : "other";
+
+    // Δημιουργία Token
     const token = jwt.sign(
-      { userId: user._id, role: user.role, project: user.project },
+      { userId: user._id, role: userRole, project: userProject },
       process.env.JWT_SECRET,
       { expiresIn: "8h" }
     );
 
     const now = new Date();
+    
+    // Καταγραφή στο LoginLog
     await LoginLog.create({
       userId: user._id,
       username: user.username,
-      project: user.project,
+      project: userProject, // Αποθηκεύουμε το normalized project
       fullName: user.fullName,
       loginAt: now,
       lastSeen: now
@@ -84,7 +111,7 @@ exports.login = async (req, res) => {
         $setOnInsert: {
           userId: user._id,
           userFullName: user.fullName,
-          userCompany: user.company, // ✅ ΝΕΟ: Αποθήκευση Company στο Log ημέρας
+          userCompany: user.company,
           dateKey,
           firstLoginAt: null, 
           status: "CLOSED", 
@@ -97,15 +124,17 @@ exports.login = async (req, res) => {
       { upsert: true, new: true }
     );
 
+    // ✅ 3. Στέλνουμε πίσω καθαρά δεδομένα (Lowercase)
     res.json({
       token,
       user: {
         _id: user._id,
         username: user.username,
-        role: user.role,
-        project: user.project,
+        email: user.email,
+        role: userRole,       // Σίγουρα μικρά (π.χ. "user", "admin")
+        project: userProject, // Σίγουρα μικρά (π.χ. "epic", "nova")
         fullName: user.fullName,
-        company: user.company // Επιστρέφουμε και την εταιρεία αν χρειαστεί
+        company: user.company
       },
     });
   } catch (err) {
@@ -114,12 +143,11 @@ exports.login = async (req, res) => {
   }
 };
 
-// Logout: Κλείνει το session στο LoginLog
+// Logout
 exports.logout = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Βρίσκουμε όλα τα ανοιχτά logs του χρήστη και βάζουμε logoutAt
     await LoginLog.updateMany(
       { userId: userId, logoutAt: { $exists: false } },
       { $set: { logoutAt: new Date() } }

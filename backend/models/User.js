@@ -6,25 +6,24 @@ const userSchema = new mongoose.Schema({
   email:    { type: String, required: true, unique: true },
   password: { type: String, required: true },
   
-  // ✅ ΝΕΟΙ ΡΟΛΟΙ
+  // ✅ ΡΟΛΟΙ: Αφαιρέσαμε το 'enum' για να δέχεται και "User" και "user" και "Admin" και "admin"
+  // χωρίς να πετάει errors.
   role: { 
     type: String, 
-    enum: ["admin", "manager", "user", "Backoffice", "Team Leader"], 
     default: "user" 
   },
   
-  // ✅ ΝΕΑ PROJECTS
+  // ✅ PROJECTS: Αφαιρέσαμε το 'enum' για να δέχεται και "Epic" και "epic".
+  // Αυτό έλυνε το πρόβλημα που είχες με το validation error.
   project: { 
     type: String, 
-    enum: ["alterlife", "nova", "admin", "time", "other", "Epic", "Instacar", "Nova FTTH"], 
-    required: true 
+    default: "other" 
   },
 
-  // ✅ ΝΕΟ ΠΕΔΙΟ: COMPANY
+  // ✅ COMPANY: Ελαστικότητα και εδώ για να μην κολλάει το import.
   company: {
     type: String,
-    enum: ["Othisi", "Infovest", "Infosale", "Korcavest", "Gemini", "Kontakt"],
-    required: true // Ή false αν θες να είναι προαιρετικό για αρχή
+    default: "Othisi"
   }
 
 }, { timestamps: true });

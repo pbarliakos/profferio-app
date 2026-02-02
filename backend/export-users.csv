@@ -1,135 +1,265 @@
-fullName;email;username;password;role;project
-ECATERINA MARIA SELAR;eselar@othisisa.gr;eselar;eselar43;user;nova
-EFREM PRIFTI;epriftis@othisisa.gr;epriftis;epriftis09;user;nova
-AGGELIKI ALETRA;aaletra@othisisa.gr;aaletra;aaletra07;user;nova
-AGGELIKI SPYROPOYLOY;aspuropoulou@othisisa.gr;aspuropoulou;aspuropoulou57;user;nova
-AGGELIKI TSAMOYRI;atsamouri@othisisa.gr;atsamouri;atsamouri88;user;nova
-AGGELIKI FOTIADOY;afotiadou@othisisa.gr;afotiadou;afotiadou56;user;nova
-AGORITSA ALEKSANDRA ORFANOPOYLOY;aorfanopoulou@othisisa.gr;aorfanopoulou;aorfanopoulou64;user;nova
-ADAM XRISTOS VRAGGALAS;achvraggalas@othisisa.gr;achvraggalas;achvraggalas89;user;nova
-ALEKSANDRA KARAISKOY;akaraiskou@othisisa.gr;akaraiskou;akaraiskou22;user;nova
-ANASTASIA SOYMELI;asoumeli@othisisa.gr;asoumeli;asoumeli47;user;nova
-ANTHI KSANTHIOTI;axanthioti@othisisa.gr;axanthioti;axanthioti86;user;nova
-ARETI PAPAZOGLOY;pareti@othisisa.gr;pareti;pareti96;user;nova
-ARETI TSOYMANI;tareti@othisisa.gr;tareti;tareti83;user;nova
-VASILIKI KARANTZALI;vkarantzali@othisisa.gr;vkarantzali;vkarantzali25;user;nova
-VASILIKI MPALOYRDOY;vbalourdou@othisisa.gr;vbalourdou;vbalourdou22;user;nova
-ANNA SKOPELITI;askopeliti@othisisa.gr;askopeliti;askopeliti45;user;nova
-ATZELA TZOYTZI;atzoutzi@othisisa.gr;atzoutzi;atzoutzi47;user;nova
-GEORGIA XATZIDOY;cgeorgia@othisisa.gr;cgeorgia;cgeorgia36;user;nova
-DANAI MARINAKI;mdanae@othisisa.gr;mdanae;mdanae48;user;nova
-VALERIA POLYZOY;vpolyzou@othisisa.gr;vpolyzou;vpolyzou52;user;nova
-DIMITRIS NASTOS;dnastos@othisisa.gr;dnastos;dnastos01;user;nova
-DIONYSIOS ZONTOS;dzontos@othisisa.gr;dzontos;dzontos81;user;nova
-DIMITRIS ASIMAKOPOYLOS;dasimakopoulos@othisisa.gr;dasimakopoulos;dasimakopoulos81;user;nova
-GARYFALLIA KYRKOY;gkyrkou@othisisa.gr;gkyrkou;gkyrkou65;user;nova
-ELENI VOYLGARAKI;evoulgaraki@othisisa.gr;evoulgaraki;evoulgaraki02;user;nova
-ELENI GKINI;egkini@othisisa.gr;egkini;egkini34;user;nova
-THEODORIDOY DANAI;dtheodoridou@othisisa.gr;dtheodoridou;dtheodoridou46;user;nova
-DIMITRA PSYXOYLI;dpsychouli@othisisa.gr;dpsychouli;dpsychouli50;user;nova
-EYGENIA KANAKI;ekanaki@othisisa.gr;ekanaki;ekanaki64;user;nova
-ELENI FOKA;feleni@othisisa.gr;feleni;feleni27;user;nova
-ILIAS GKINIS;gilias@othisisa.gr;gilias;gilias05;user;nova
-THEODORA MANTZIOYKOPOYLOY;thmantzioukopoulou@othisisa.gr;thmantzioukopoulou;thmantzioukopoulou09;user;nova
-DIMITRIOS MITROPOYLOS;dmitropoulos@othisisa.gr;dmitropoulos;dmitropoulos49;user;nova
-DORA TZAKI;dtzaki@othisisa.gr;dtzaki;dtzaki86;user;nova
-EIRINI GKORITSA;egkoritsa@othisisa.gr;egkoritsa;egkoritsa63;user;nova
-EIRINI MOYZA;emouza@othisisa.gr;emouza;emouza77;user;nova
-ELENI MPAZAKI;ebazaki@othisisa.gr;ebazaki;ebazaki49;user;nova
-EYAGGELIA ANAGNOSTOY;evanagnostou@othisisa.gr;evanagnostou;evanagnostou47;user;nova
-EYI NIKOLAOY;enikolaou@othisisa.gr;enikolaou;enikolaou38;user;nova
-KONSTANTINOS GKEKAS;gkonstantinos@othisisa.gr;gkonstantinos;gkonstantinos91;user;nova
-KOSTAS SONOS;skostas@othisisa.gr;skostas;skostas83;user;nova
-ILIAS SIMIRIOTIS;isimiriotis@othisisa.gr;isimiriotis;isimiriotis58;user;nova
-IOYLIA OIKONOMOY;ioikonomou@othisisa.gr;ioikonomou;ioikonomou50;user;nova
-KATERINA MITSOY;kmitsou@othisisa.gr;kmitsou;kmitsou15;user;nova
-KATERINA NIKA;knika@othisisa.gr;knika;knika35;user;nova
-KATERINA PAPPA;kpappa@othisisa.gr;kpappa;kpappa68;user;nova
-KATERINA SEVASTOY;ksevastou@othisisa.gr;ksevastou;ksevastou09;user;nova
-NIKOLAOS FRATZIS;nfrantzis@othisisa.gr;nfrantzis;nfrantzis78;user;nova
-KYRIAKI KOYTSODIMA;kkoutsodima@othisisa.gr;kkoutsodima;kkoutsodima60;user;nova
-KONSTANTINA AGGELOYSI;kaggelousi@othisisa.gr;kaggelousi;kaggelousi24;user;nova
-PANAGIOTIS AGGELOS KARASKOYTIS;pkaraskoutis@othisisa.gr;pkaraskoutis;pkaraskoutis15;user;nova
-LORENA LETSI;lletsi@othisisa.gr;lletsi;lletsi29;user;nova
-LYDIA PITSARI;lpitsari@othisisa.gr;lpitsari;lpitsari98;user;nova
-MARGARITA SPANOY;mspanou@othisisa.gr;mspanou;mspanou18;user;nova
-MARIA KOLA;mkola@othisisa.gr;mkola;mkola77;user;nova
-MARIA MPARKA;mmparka@othisisa.gr;mmparka;mmparka94;user;nova
-MARIANA DIMADI;mdimadi@othisisa.gr;mdimadi;mdimadi63;user;nova
-XRISTOS XALASTRAS;chchalastras@othisisa.gr;chchalastras;chchalastras22;user;nova
-MARINA LAGOY;mlagou@othisisa.gr;mlagou;mlagou98;user;nova
-MIXALIS ANAGNOSTOPOYLOS;managnostopoulos@othisisa.gr;managnostopoulos;managnostopoulos98;user;nova
-MYRTO VAKALI;mvakali@othisisa.gr;mvakali;mvakali26;user;nova
-NIKOLAOS MPOZANIS;nmpozanis@othisisa.gr;nmpozanis;nmpozanis10;user;nova
-NIKOLETA EYAGGELIA PRISIMITZAKI;neprisimitzaki@othisisa.gr;neprisimitzaki;neprisimitzaki88;user;nova
-NTORA NTOYRKA;nntourka@othisisa.gr;nntourka;nntourka06;user;nova
-OLGA STRANTZIA;ostrantzia@othisisa.gr;ostrantzia;ostrantzia08;user;nova
-ORESTIS KOLETSOS;okoletsos@othisisa.gr;okoletsos;okoletsos99;user;nova
-POLYKSENI ROKALI;prokali@othisisa.gr;prokali;prokali23;user;nova
-RANIA ZOYLI;rzouli@othisisa.gr;rzouli;rzouli05;user;nova
-SARA ROYSOY;srousou@othisisa.gr;srousou;srousou36;user;nova
-SOFIA GIANNOY;sgiannou@othisisa.gr;sgiannou;sgiannou41;user;nova
-SPYROS KANAKIS;skanakis@othisisa.gr;skanakis;skanakis53;user;nova
-STAYROS KONTOS;skontos@othisisa.gr;skontos;skontos81;user;nova
-STAYROYLA PANAKI;spanaki@othisisa.gr;spanaki;spanaki37;user;nova
-TEA NEFELI LETSI;tletsi@othisisa.gr;tletsi;tletsi93;user;nova
-ARISTEA STERGIOY;arstergiou@othisisa.gr;arstergiou;arstergiou06;user;nova
-FAII DILAKI;fdilaki@othisisa.gr;fdilaki;fdilaki60;user;nova
-XARA KOYTSOVASILI;chkoutsovasili@othisisa.gr;chkoutsovasili;chkoutsovasili25;user;nova
-ATHANASIADI PINELOPI;pathanasiadi@othisisa.gr;pathanasiadi;pathanasiadi57;user;nova
-FAMPION PRENGKA;pfabion@othisisa.gr;pfabion;pfabion38;user;nova
-GARYFALIA POYLAKOY;gpoulakou2@othisisa.gr;gpoulakou2;gpoulakou208;user;nova
-PAYLINA GKIKA;pgkika@othisisa.gr;pgkika;pgkika45;user;nova
-KRISTI DAMO;kdamo@othisisa.gr;kdamo;kdamo04;user;nova
-BARBARA MARIA KAWKA;mkawka@othisisa.gr;mkawka;mkawka17;user;nova
-EIRINI ROYSOPOYLOY;erousopoulou@othisisa.gr;erousopoulou;erousopoulou30;user;nova
-PINELOPI TSINTONI;ptsintoni@othisisa.gr;ptsintoni;ptsintoni93;user;nova
-ELPIDA GKOTSI;egkotsi@othisisa.gr;egkotsi;egkotsi66;user;nova
-RENATOS TSOYKOLARIS;rtsoukolaris@othisisa.gr;rtsoukolaris;rtsoukolaris63;user;nova
-ANASTASIA KARAPATZI;akarapatzi@othisisa.gr;akarapatzi;akarapatzi63;user;nova
-DORA TSALA;dtsala@othisisa.gr;dtsala;dtsala26;user;nova
-MARIA ALIKO;maliko@othisisa.gr;maliko;maliko49;user;nova
-MARIANNA KAMANI;makamani@othisisa.gr;makamani;makamani20;user;nova
-SOFIA TOMANI;stomani@othisisa.gr;stomani;stomani92;user;nova
-PARASKEYI PATAKI;ppataki@othisisa.gr;ppataki;ppataki81;user;nova
-AIKATERINI SFLOYGKOY;asflougou@othisisa.gr;asflougou;asflougou88;user;nova
-AGGELOS XRISTODOYLOY;agchristodoulou@othisisa.gr;agchristodoulou;agchristodoulou70;user;nova
-IOANNIS MPOYSOYLAS;impousoulas@othisisa.gr;impousoulas;impousoulas16;user;nova
-JORGOS DHIMITRI;jdhimitri@othisisa.gr;jdhimitri;jdhimitri40;user;nova
-RAFAIL IOANNIDIS;rioannidis@othisisa.gr;rioannidis;rioannidis63;user;nova
-SYMEON GAVRIILIDIS;sgavriilidis@othisisa.gr;sgavriilidis;sgavriilidis58;user;nova
-MARIA AGGELIKI THEODORI;matheodori@othisisa.gr;matheodori;matheodori18;user;nova
-SEVASTIANOS TSIFLIKIS�;stsiflikis@othisisa.gr;stsiflikis;stsiflikis35;user;nova
-AGGELIKI MORALI;amorali@othisisa.gr;amorali;amorali78;user;nova
-ANNA KONI;akoni@othisisa.gr;akoni;akoni30;user;nova
-VIKTORIA ANTONI;vantoni@othisisa.gr;vantoni;vantoni09;user;nova
-MARIA ANTONIA KOYSA;amkousa@othisisa.gr;amkousa;amkousa47;user;nova
-STYLIANI EIRINI LAMPROPOYLOY;slampropoulou@othisisa.gr;slampropoulou;slampropoulou21;user;nova
-SIA DERVISI;sdervisi@othisisa.gr;sdervisi;sdervisi48;user;nova
-KEISI ZA�MI;kzaimi@othisisa.gr;kzaimi;kzaimi87;user;nova
-GIANNIS ZOYLALIS;gzoulalis@othisisa.gr;gzoulalis;gzoulalis70;user;nova
-ARIS MPEZAS;ampezas@othisisa.gr;ampezas;ampezas25;user;nova
-MARIA GKIKA;magkika@othisisa.gr;magkika;magkika82;user;nova
-PANAGIOTIS TSIAVOS;ptsiavos2@othisisa.gr;ptsiavos2;ptsiavos299;user;nova
-FAII LOYKAKOY;floukakou@othisisa.gr;floukakou;floukakou74;user;nova
-SARA KOYLI;skouli@othisisa.gr;skouli;skouli47;user;nova
-ANTONIS KOLA�DIS;akolaidis@othisisa.gr;akolaidis;akolaidis70;user;nova
-ANDREAS MPINIAKOS;abiniakos@othisisa.gr;abiniakos;abiniakos21;user;nova
-ORESTIS XATZISALARIS;ochatzisalaris@othisisa.gr;ochatzisalaris;ochatzisalaris24;user;nova
-ERINTA TSOLLAKOY;etsolakou@othisisa.gr;etsolakou;etsolakou26;user;nova
-KONSTANTINOS MOYXOS;kmouchos@othisisa.gr;kmouchos;kmouchos23;user;nova
-STAYROYLA XARSIOY;scharsiou@othisisa.gr;scharsiou;scharsiou50;user;nova
-PAYLOS IOANNIDIS;pioannidis@othisisa.gr;pioannidis;pioannidis82;user;nova
-THEOFANIA PANAGIOTA SELLA;thsella@othisisa.gr;thsella;thsella55;user;nova
-MARIA PAPAEYTHYMIOY;mpapaefthimiou@othisisa.gr;mpapaefthimiou;mpapaefthimiou66;user;nova
-ROKKO STELLA;srokko@othisisa.gr;srokko;srokko52;user;nova
-AXMETA� NTINA;nachmetai@othisisa.gr;nachmetai;nachmetai31;user;nova
-ANAGNOSTI SOYZANA;sanagnosti@othisisa.gr;sanagnosti;sanagnosti69;user;nova
-AGORA AFRODITI;aagora@othisisa.gr;aagora;aagora20;user;nova
-XOTZA IOANNA;ichotza@othisisa.gr;ichotza;ichotza32;user;nova
-KALIMERI ROVENA;rkalimeri@othisisa.gr;rkalimeri;rkalimeri37;user;nova
-SOYLI ANTA;ansouli@othisisa.gr;ansouli;ansouli26;user;nova
-MARIA SPYROPOYLOY;mspiropoulou@othisisa.gr;mspiropoulou;mspiropoulou75;user;nova
-MARIA PAPADANIIL;mpapadaniil@othisisa.gr;mpapadaniil;mpapadaniil48;user;nova
-FANI GKOYNTOYLOGIANNI;fgkountoulogianni@othisisa.gr;fgkountoulogianni;fgkountoulogianni23;user;nova
-EYAGGELIA ALMPANI;ealbani@othisisa.gr;ealbani;ealbani44;user;nova
+fullName;username;email;password;company;role;project
+AFRODITI HRAKLEOUS;ahrakleous;ahrakleous@othisisa.gr;ahrakleous123;Othisi;User;Epic
+AKRIVI KOUFOGAZOU;akoufogazou;akoufogazou@othisisa.gr;akoufogazou854;Othisi;User;Epic
+ALIKI GKOTSI;agkotsi;agkotsi@othisisa.gr;agkotsi99;Othisi;User;Epic
+ANDREANA ANDREADOU;aandreadou;aandreadou@othisisa.gr;aandreadou455;Othisi;User;Epic
+ANNA SEMERTZIDOU;asemertzidou;asemertzidou@othisisa.gr;asemertzidou315;Othisi;User;Epic
+CHRISTIANA TSERAVA;chtserava;chtserava@othisisa.gr;chtserava162;Othisi;User;Epic
+DIMITRA KATSIKA;dkatsika;dkatsika@othisisa.gr;dkatsika791;Othisi;User;Epic
+EIRINI KERASIOTI;ekerasioti;ekerasioti@othisisa.gr;ekerasioti108;Othisi;User;Epic
+EVAGGELIA TOTSIKA;etotsika;etotsika@othisisa.gr;etotsika194;Othisi;User;Epic
+FOTINI TATATZIKIDOU;ftatatzikidou;ftatatzikidou@othisisa.gr;ftatatzikidou730;Othisi;User;Epic
+GARYFALLIA TZEREFOU;gtzerefou;gtzerefou@othisisa.gr;gtzerefou348;Othisi;User;Epic
+GEORGIA PAPACHARALAMPOUS;gpapacharalampous;gpapacharalampous@othisisa.gr;gpapacharalampous76;Othisi;User;Epic
+GEORGIA STAMOU;g.stamou;g.stamou@othisisa.gr;g.stamou923;Othisi;User;Epic
+IOANNIS GIATROUTSIKOS PRATTOS;igiatroutsikos;igiatroutsikos@othisisa.gr;igiatroutsikos224;Othisi;User;Epic
+KALLIOPI ANDREADOU;kandreadou;kandreadou@othisisa.gr;kandreadou217;Othisi;User;Epic
+KIRIAKI KALPAKOU;kkalpakou;kkalpakou@othisisa.gr;kkalpakou505;Othisi;User;Epic
+KONSTANTINA GKOURGIOTOU;kgkourgiotou;kgkourgiotou@othisisa.gr;kgkourgiotou286;Othisi;User;Epic
+KONSTANTINOS MPETAVATZIS;kmpetavatzis;kmpetavatzis@othisisa.gr;kmpetavatzis573;Othisi;User;Epic
+MARIA KAYMENAKI;mkaymenaki;mkaymenaki@othisisa.gr;mkaymenaki401;Othisi;User;Epic
+MARIA MPALASOPOULOU;mmpalasopoulou;mmpalasopoulou@othisisa.gr;mmpalasopoulou423;Othisi;User;Epic
+MARIA PLAKIA;mplakia;mplakia@othisisa.gr;mplakia857;Othisi;User;Epic
+NIKOLAOS PATOUCHIADIS;npatouchiadis;npatouchiadis@othisisa.gr;npatouchiadis898;Othisi;User;Epic
+NIKOLETA DANEZI;ndanezi;ndanezi@othisisa.gr;ndanezi566;Othisi;User;Epic
+NORA CHASIRIDOU;ncharisidou;ncharisidou@othisisa.gr;ncharisidou708;Othisi;User;Epic
+PAULO ZYLALI;pzylali;pzylali@othisisa.gr;pzylali809;Othisi;User;Epic
+ALBANO MERTIRIS;amertiris;amertiris@othisisa.gr;amertiris422;Othisi;User;Epic
+GEORGIA LELI;gleli;gleli@othisisa.gr;gleli182;Othisi;Team Leader;Epic
+STAMATIOS SKAFIDAS;sskafidas;sskafidas@othisisa.gr;sskafidas269;Othisi;Team Leader;Epic
+GEORGIA MPOUNA;gmpouna;gmpouna@othisisa.gr;gmpouna89;Othisi;Team Leader;Epic
+ARTEMIS SPATHARI;aspathari2;aspathari2@othisisa.gr;aspathari2250;Othisi;User;Nova FTTH
+CHRISTINA SEREMETI;cseremeti;cseremeti@othisisa.gr;cseremeti276;Othisi;User;Nova FTTH
+CHRISTINA SEVA;chseva;chseva@othisisa.gr;chseva872;Othisi;User;Nova FTTH
+DIMITRA KARDARA;dkardara;dkardara@othisisa.gr;dkardara776;Othisi;User;Nova FTTH
+KATERINA MANTALVANOU;kmantalvanou;kmantalvanou@othisisa.gr;kmantalvanou653;Othisi;User;Nova FTTH
+MARIA PAPAEFTHIMIOU;mpapaefthimiou;mpapaefthimiou@othisisa.gr;mpapaefthimiou401;Othisi;User;Nova FTTH
+MARIA PATAPA;mpatapa;mpatapa@othisisa.gr;mpatapa663;Othisi;User;Nova FTTH
+MARIA VAZAKIDOU;mvazakidou;mvazakidou@othisisa.gr;mvazakidou643;Othisi;User;Nova FTTH
+MATILDA SKAMPI;mskampi;mskampi@othisisa.gr;mskampi767;Othisi;User;Nova FTTH
+POLICHRONIA PAGANIARI;ppaganiari;ppaganiari@othisisa.gr;ppaganiari98;Othisi;User;Nova FTTH
+SOFIA MPONTARI;smpontari;smpontari@othisisa.gr;smpontari51;Othisi;User;Nova FTTH
+ZOI IOAKIMOPOULOU;zioakimopoulou;zioakimopoulou@othisisa.gr;zioakimopoulou943;Othisi;User;Nova FTTH
+MARIA SPATHARI;mspathari;mspathari@othisisa.gr;mspathari44;Othisi;Team Leader;Nova
+IOANNIS DUNI;jduni;jduni@othisisa.gr;jduni34;Othisi;Team Leader;Nova
+PANAGIOTIS KONTOLATIS;pkontolatis;pkontolatis@othisisa.gr;pkontolatis143;Othisi;Team Leader;Nova
+BARBARA MARIA KAWKA;mkawka;mkawka@othisisa.gr;mkawka39;Othisi;User;Nova
+ECATERINA MARIA SELAR;eselar;eselar@othisisa.gr;eselar77;Othisi;User;Nova
+JORGOS DHIMITRI;jdhimitri;jdhimitri@othisisa.gr;jdhimitri20;Othisi;User;Nova
+RAISA MARZIA RAHMAN;rrahman;rrahman@othisisa.gr;rrahman731;Othisi;User;Nova
+AGGELIKI SPYROPOULOU;aspuropoulou;aspuropoulou@othisisa.gr;aspuropoulou903;Othisi;User;Nova
+AIKATERINI SFLOUGKOU;asflougou;asflougou@othisisa.gr;asflougou679;Othisi;User;Nova
+ANASTASIA MPLIAMPLIA;ampliamplia;ampliamplia@othisisa.gr;ampliamplia798;Othisi;User;Nova
+ANNA SKOPELITI;askopeliti;askopeliti@othisisa.gr;askopeliti290;Othisi;User;Nova
+VIKTORIA MARIA NTINIERAKI;vdinieraki;vdinieraki@othisisa.gr;vdinieraki817;Othisi;User;Nova
+DIMITRIS NASTOS;dnastos;dnastos@othisisa.gr;dnastos978;Othisi;User;Nova
+EIRINI ROUSOPOULOU;erousopoulou;erousopoulou@othisisa.gr;erousopoulou223;Othisi;User;Nova
+ELENI ANNA ZISI;ezisi;ezisi@othisisa.gr;ezisi987;Othisi;User;Nova
+ELENI VOULGARAKI;evoulgaraki;evoulgaraki@othisisa.gr;evoulgaraki233;Othisi;User;Nova
+ELENI PAGONA;epagona;epagona@othisisa.gr;epagona928;Othisi;User;Nova
+ELENI FILI;efili;efili@othisisa.gr;efili238;Othisi;User;Nova
+ERMIONI KOUIMANI;ekouimani;ekouimani@othisisa.gr;ekouimani614;Othisi;User;Nova
+ZONTOS DIONYSIOS;dzontos;dzontos@othisisa.gr;dzontos786;Othisi;User;Nova
+THEODORA MANTZIOUKOPOULOU;thmantzioukopoulou;thmantzioukopoulou@othisisa.gr;thmantzioukopoulou632;Othisi;User;Nova
+IOANNA DAGKLI;idagkli;idagkli@othisisa.gr;idagkli403;Othisi;User;Nova
+IOANNIS MPOUSOULAS;impousoulas;impousoulas@othisisa.gr;impousoulas25;Othisi;User;Nova
+KONSTANTINA AGGELOUSI;kaggelousi;kaggelousi@othisisa.gr;kaggelousi637;Othisi;User;Nova
+LORENA LETSI;lletsi;lletsi@othisisa.gr;lletsi531;Othisi;User;Nova
+MARIA AGGELIKI THEODORI;matheodori;matheodori@othisisa.gr;matheodori818;Othisi;User;Nova
+MARIA TSELIOU;mtseliou;mtseliou@othisisa.gr;mtseliou54;Othisi;User;Nova
+MARILITA DELIGIANNI;mdeligianni;mdeligianni@othisisa.gr;mdeligianni88;Othisi;User;Nova
+MARINA LAGOU;mlagou;mlagou@othisisa.gr;mlagou986;Othisi;User;Nova
+NIKOLETA EVAGGELIA PRISIMITZAKI;neprisimitzaki;neprisimitzaki@othisisa.gr;neprisimitzaki949;Othisi;User;Nova
+OLGA STRANTZIA;ostrantzia;ostrantzia@othisisa.gr;ostrantzia614;Othisi;User;Nova
+PINELOPI ATHANASIADI;pathanasiadi;pathanasiadi@othisisa.gr;pathanasiadi906;Othisi;User;Nova
+PINELOPI TSINTONI;ptsintoni;ptsintoni@othisisa.gr;ptsintoni229;Othisi;User;Nova
+SAVVINA KALLIOPI ANYFANTAKI;skanifantaki;skanifantaki@othisisa.gr;skanifantaki321;Othisi;User;Nova
+TEA NEFELI LETSI;tletsi;tletsi@othisisa.gr;tletsi189;Othisi;User;Nova
+FAMBION PRENGKA;pfabion;pfabion@othisisa.gr;pfabion456;Othisi;User;Nova
+FROSO ATHANASIOU;fathanasiou;fathanasiou@othisisa.gr;fathanasiou101;Othisi;User;Nova
+CHARA KOUTSOVASILI;chkoutsovasili;chkoutsovasili@othisisa.gr;chkoutsovasili637;Othisi;User;Nova
+ΔΗΜΗΤΡΑ ΒΑΣΙΛΑΚΟΠΟΥΛΟΥ;dvasilakopoulou;dvasilakopoulou@othisisa.gr;dvasilakopoulou758;Othisi;Backoffice;Other
+ΡΑΦΑΕΛΑ ΠΟΛΛΑΤΟΥ;rpollatou;rpollatou@othisisa.gr;rpollatou682;Othisi;Backoffice;Other
+ΚΩΝΣΤΑΝΤΙΝΑ ΓΑΙΤΑΝΟΥ;kgaitanou;kgaitanou@othisisa.gr;kgaitanou515;Othisi;Backoffice;Other
+ΜΑΡΙΑ ΑΡΑΒΑΝΤΙΝΟΥ;maravantinou;maravantinou@othisisa.gr;maravantinou682;Othisi;Backoffice;Other
+ΜΑΡΙΝΑ ΧΕΙΛΑ;mcheila;mcheila@othisisa.gr;mcheila123;Othisi;Backoffice;Other
+ΠΟΛΥΞΕΝΗ ΜΟΣΚΟΦΙΔΟΥ;pmoskofidou;pmoskofidou@othisisa.gr;pmoskofidou596;Othisi;Backoffice;Other
+ΦΩΤΕΙΝΗ ΚΟΤΣΩΝΗ;fkotsoni;fkotsoni@othisisa.gr;fkotsoni837;Othisi;Backoffice;Other
+MAGDALINI ROIDI;mroidi;mroidi@othisisa.gr;mroidi256;Othisi;HR;Other
+ELENI GKINI;egkini;egkini@othisisa.gr;egkini325;Othisi;HR;Other
+EYAGGELIA BESKOU;empeskou;empeskou@othisisa.gr;empeskou736;Othisi;HR;Other
+GEORGIOS TAVOULARIS;gtavoularis;gtavoularis@othisisa.gr;gtavoularis854;Othisi;Admin;Other
+PANAGIOTIS VLACHAKIS;pvlachakis;pvlachakis@othisisa.gr;pvlachakis205;Othisi;Admin;Other
+YIANNIS MANIKAS;ymanikas;ymanikas@othisisa.gr;ymanikas454;Othisi;Admin;Other
+PANTELIS BARLIAKOS;pbarliakos;pbarliakos@othisisa.gr;pbarliakos601;Othisi;Admin;Other
+AGGELIKI IOANNA CHATZOUDI;achatzoudi;achatzoudi@othisisa.gr;achatzoudi30;Othisi;User;Alterlife
+DESPINA DASKALOU;ddaskalou;ddaskalou@othisisa.gr;ddaskalou94;Othisi;User;Alterlife
+DESPINA LANO;dlano;dlano@othisisa.gr;dlano758;Othisi;User;Alterlife
+EFTHIMIA MPRAMI;emprami;emprami@othisisa.gr;emprami154;Othisi;User;Alterlife
+EIRINI SAKKA;esakka;esakka@othisisa.gr;esakka417;Othisi;User;Alterlife
+ELENI KOSTANTINIDI;ekostantinidi;ekostantinidi@othisisa.gr;ekostantinidi132;Othisi;User;Alterlife
+ELISAVET MPALAPERI;empalaperi;empalaperi@othisisa.gr;empalaperi370;Othisi;User;Alterlife
+EVAGELOS STATHIS;estathis;estathis@othisisa.gr;estathis986;Othisi;User;Alterlife
+GEORGIA GRAMMATIKOGLOU;ggrammatikoglou;ggrammatikoglou@othisisa.gr;ggrammatikoglou276;Othisi;User;Alterlife
+MARIA LATHOURAKI;mlathouraki;mlathouraki@othisisa.gr;mlathouraki277;Othisi;User;Alterlife
+NEFELI KSINOU;nksinou;nksinou@othisisa.gr;nksinou496;Othisi;User;Alterlife
+NIKOLAOS MPOZANI;nmpozani;nmpozani@othisisa.gr;nmpozani644;Othisi;User;Alterlife
+FANI GKOUNTOULOGIANNI;fgkountoulogianni;fgkountoulogianni@othisisa.gr;fgkountoulogianni880;Othisi;User;Alterlife
+VASILIKI SARANTI;vsaranti;vsaranti@othisisa.gr;vsaranti475;Othisi;User;Alterlife
+ZOI PAPAKONSTANTINOU;zpapakonstantinou;zpapakonstantinou@othisisa.gr;zpapakonstantinou866;Othisi;User;Alterlife
+CHRISTINA GAVRIIL;chgavriil;chgavriil@othisisa.gr;chgavriil109;Othisi;Team Leader;Alterlife
+DIMITRIS KARATZENIS;dkaratzenis;dkaratzenis@othisisa.gr;dkaratzenis729;Othisi;Team Leader;Alterlife
+DIMITRIS MASOURAS;dmasouras;dmasouras@othisisa.gr;dmasouras274;Othisi;User;Instacar
+EFROSINI APOSTOLAKI;eapostolaki;eapostolaki@othisisa.gr;eapostolaki467;Othisi;User;Instacar
+EPAMINONDAS IFANTOPOULOS;eifantopoulos;eifantopoulos@othisisa.gr;eifantopoulos94;Othisi;User;Instacar
+EVDOXIA KOURKOUTA;ekourkouta;ekourkouta@othisisa.gr;ekourkouta548;Othisi;User;Instacar
+HRISTINA BACHVAROVA;hbachvarova;hbachvarova@othisisa.gr;hbachvarova401;Othisi;User;Instacar
+MAILINTA LOTSI;mlotsi;mlotsi@othisisa.gr;mlotsi989;Othisi;User;Instacar
+PANAGIOTIS REKKAS;prekkas;prekkas@othisisa.gr;prekkas288;Othisi;User;Instacar
+PETRO HASANKO;phasanko;phasanko@othisisa.gr;phasanko4;Othisi;User;Instacar
+VASILIKI GKOUKLA;vgkoukla;vgkoukla@othisisa.gr;vgkoukla955;Othisi;User;Instacar
+VASILIKI PETRAKI;vpetraki;vpetraki@othisisa.gr;vpetraki603;Othisi;User;Instacar
+ΠΑΡΑΣΚΕΥΗ ΨΥΧΟΓΙΟΥ;ppsichogiou;ppsichogiou@othisisa.gr;ppsichogiou831;Othisi;Backoffice;Other
+ΑΓΓΕΛΙΚΗ ΖΩΑΝΝΟΥ;azoannou;azoannou@othisisa.gr;azoannou732;Othisi;Backoffice;Other
+ΘΕΟΔΩΡΟΣ ΑΡΓΥΡΟΠΟΥΛΟΣ;thargiropoulos;thargiropoulos@othisisa.gr;thargiropoulos168;Othisi;Backoffice;Other
+ΚΑΤΕΡΙΝΑ ΔΡΟΣΟΠΟΥΛΟΥ;kdrosopoulou;kdrosopoulou@othisisa.gr;kdrosopoulou816;Othisi;Backoffice;Other
+ΧΡΙΣΤΙΝΑ ΖΕΝΤΕΛΗ;chzenteli;chzenteli@othisisa.gr;chzenteli729;Othisi;Backoffice;Other
+ΕΥΑΓΓΕΛΙΑ ΔΗΜΟΝΙΤΣΑ;edimonitsa;edimonitsa@othisisa.gr;edimonitsa25;Othisi;Backoffice;Other
+AFRODITI KORO;akoro;akoro@othisisa.gr;akoro669;Gemini;User;Nova
+ALKETA LESI;alesi;alesi@othisisa.gr;alesi707;Gemini;User;Nova
+AMANDA ZENELI;azeneli;azeneli@othisisa.gr;azeneli540;Gemini;User;Nova
+AMARILNTA DOKSANI;adoksani;adoksani@othisisa.gr;adoksani582;Gemini;User;Nova
+ANDREAS PERISNAKAS;aperisnakas;aperisnakas@othisisa.gr;aperisnakas504;Gemini;User;Nova
+ANDRIANA CHETALI;achetali;achetali@othisisa.gr;achetali918;Gemini;User;Nova
+ANNA ELEZI;aelezi;aelezi@othisisa.gr;aelezi273;Gemini;User;Nova
+ANTZELA TSOLLAKOU;atsollakou;atsollakou@othisisa.gr;atsollakou208;Gemini;User;Nova
+ATHINA VASO;avaso;avaso@othisisa.gr;avaso205;Gemini;User;Nova
+CHRISTINA CHALKIADAKI;chchalkiadaki;chchalkiadaki@othisisa.gr;chchalkiadaki261;Gemini;User;Nova
+DIMITRA SPANOU;dspanou;dspanou@othisisa.gr;dspanou396;Gemini;User;Nova
+EIRINI KOTZAGKIOZI;erkotzagkiozi;erkotzagkiozi@othisisa.gr;erkotzagkiozi55;Gemini;User;Nova
+EIRINI MIESTRI;emiestri;emiestri@othisisa.gr;emiestri331;Gemini;User;Nova
+ELENI KOTZAGKIOZI;elkotzagkiozi;elkotzagkiozi@othisisa.gr;elkotzagkiozi394;Gemini;User;Nova
+ELINA METANIDOU;emetanidou;emetanidou@othisisa.gr;emetanidou211;Gemini;User;Nova
+ELLI MPOUTOURI;empoutouri;empoutouri@othisisa.gr;empoutouri239;Gemini;User;Nova
+ERINTA TSOLLAKOU;etsolakou;etsolakou@othisisa.gr;etsolakou966;Gemini;User;Nova
+ESMERALNTA KALOUDI;ekaloudi;ekaloudi@othisisa.gr;ekaloudi487;Gemini;User;Nova
+FOTINI GKREMO;fgkremo;fgkremo@othisisa.gr;fgkremo818;Gemini;User;Nova
+FRANTSESKA MOULA;fmoula;fmoula@othisisa.gr;fmoula151;Gemini;User;Nova
+GEORGIA KOTANIDOU;gkotanidou;gkotanidou@othisisa.gr;gkotanidou501;Gemini;User;Nova
+GIONINTA PEKO;gpeko;gpeko@othisisa.gr;gpeko737;Gemini;User;Nova
+GIORGOS GIANI;ggiani;ggiani@othisisa.gr;ggiani552;Gemini;User;Nova
+ILEKTRA MAZAREA;imazarea;imazarea@othisisa.gr;imazarea293;Gemini;User;Nova
+IOULIETA DIMOGIANNI;idimogianni;idimogianni@othisisa.gr;idimogianni575;Gemini;User;Nova
+KATERINA GEORGIOU;kgeorgiou;kgeorgiou@othisisa.gr;kgeorgiou125;Gemini;User;Nova
+MARIA ANAGNOSTI;managnosti;managnosti@othisisa.gr;managnosti414;Gemini;User;Nova
+MARKELLA TZEPA;mtzepa;mtzepa@othisisa.gr;mtzepa326;Gemini;User;Nova
+MENELAOS AGOUDIMOS;magoudimos;magoudimos@othisisa.gr;magoudimos129;Gemini;User;Nova
+NTENI ARAPI;narapi;narapi@othisisa.gr;narapi946;Gemini;User;Nova
+RAFAELA TSELA;rtsela;rtsela@othisisa.gr;rtsela900;Gemini;User;Nova
+ROVENA KALIMERI;rkalimeri;rkalimeri@othisisa.gr;rkalimeri859;Gemini;User;Nova
+SILVANA RAMONTAKI;sramotaki;sramotaki@othisisa.gr;sramotaki929;Gemini;User;Nova
+SOUZANA KARIDA;skarida;skarida@othisisa.gr;skarida294;Gemini;User;Nova
+STELLA KILLO;skillo;skillo@othisisa.gr;skillo914;Gemini;User;Nova
+ZOI IDREOU;zidreou;zidreou@othisisa.gr;zidreou384;Gemini;User;Nova
+AFRODITI AGORA;aagora;aagora@othisisa.gr;aagora995;Infovest;User;Nova
+AGGELIKI ALETRA;aaletra;aaletra@othisisa.gr;aaletra402;Infovest;User;Nova
+AGGELIKI FOTIADOU;afotiadou;afotiadou@othisisa.gr;afotiadou107;Infovest;User;Nova
+ALEXANDRA KARAISKOU;akaraiskou;akaraiskou@othisisa.gr;akaraiskou922;Infovest;User;Nova
+ALINTA MPITA;ampita;ampita@othisisa.gr;ampita934;Infovest;User;Nova
+ANASTASIA SOUMELI;asoumeli;asoumeli@othisisa.gr;asoumeli29;Infovest;User;Nova
+ANDREAS MPAMPOTSIS;ampampotsis;ampampotsis@othisisa.gr;ampampotsis746;Infovest;Team Leader;Nova
+ANTHI XANTHIOTI;axanthioti;axanthioti@othisisa.gr;axanthioti719;Infovest;User;Nova
+ARETI PAPAZOGLOU;pareti;pareti@othisisa.gr;pareti327;Infovest;User;Nova
+ARETI TSOUMANI;tareti;tareti@othisisa.gr;tareti675;Infovest;User;Nova
+CHRISTINA DOUKA;chdouka;chdouka@othisisa.gr;chdouka330;Infovest;User;Nova
+DANAI MARINAKI;d.marinaki;d.marinaki@othisisa.gr;d.marinaki810;Infovest;User;Nova
+DIMITRA PSYCHOULI;dpsychouli;dpsychouli@othisisa.gr;dpsychouli387;Infovest;User;Nova
+DIMITRIOS MITROPOULOS;dmitropoulos;dmitropoulos@othisisa.gr;dmitropoulos727;Infovest;User;Nova
+EIRINI MOUZA;emouza;emouza@othisisa.gr;emouza878;Infovest;User;Nova
+ELENI FOKA;efoka;efoka@othisisa.gr;efoka529;Infovest;User;Nova
+ELLI GIANNI;egianni;egianni@othisisa.gr;egianni769;Infovest;User;Nova
+ELNTA TSELA;etsela;etsela@othisisa.gr;etsela832;Infovest;User;Nova
+ELPIDA GKOTSI;egkotsi;egkotsi@othisisa.gr;egkotsi157;Infovest;User;Nova
+EVGENIA KANAKI;ekanaki;ekanaki@othisisa.gr;ekanaki218;Infovest;User;Nova
+FEI DILAKI;fdilaki;fdilaki@othisisa.gr;fdilaki70;Infovest;User;Nova
+GARYFALLIA KYRKOU;gkyrkou;gkyrkou@othisisa.gr;gkyrkou63;Infovest;User;Nova
+GEORGIA CHATZIDOU;cgeorgia;cgeorgia@othisisa.gr;cgeorgia214;Infovest;User;Nova
+GIOLANTA POUZE;gpouze;gpouze@othisisa.gr;gpouze492;Infovest;User;Nova
+ILIAS GKINIS;i.ginis;i.ginis@othisisa.gr;i.ginis117;Infovest;User;Nova
+ILIAS SIMIRIOTIS;isimiriotis;isimiriotis@othisisa.gr;isimiriotis373;Infovest;User;Nova
+IOANNA FOUSTANI;ifoustani;ifoustani@othisisa.gr;ifoustani842;Infovest;User;Nova
+IOANNIS MIRAKIS;imirakis;imirakis@othisisa.gr;imirakis322;Infovest;User;Nova
+IOULIA OIKONOMOU;ioikonomou;ioikonomou@othisisa.gr;ioikonomou738;Infovest;User;Nova
+KATERINA MITSOU;kmitsou;kmitsou@othisisa.gr;kmitsou84;Infovest;User;Nova
+KATERINA NIKA;knika;knika@othisisa.gr;knika740;Infovest;User;Nova
+KATERINA PAPPA;kpappa;kpappa@othisisa.gr;kpappa705;Infovest;User;Nova
+KATERINA SEVASTOU;ksevastou;ksevastou@othisisa.gr;ksevastou105;Infovest;User;Nova
+KONSTANTINA KARAGIANNI;k.karagianni;k.karagianni@othisisa.gr;k.karagianni457;Infovest;User;Nova
+KONSTANTINOS GKEKAS;gkonstantinos;gkonstantinos@othisisa.gr;gkonstantinos13;Infovest;User;Nova
+KOSTAS SONOS;skostas;skostas@othisisa.gr;skostas446;Infovest;User;Nova
+MARIA GKIKA;magkika;magkika@othisisa.gr;magkika279;Infovest;User;Nova
+MARIA KOLA;mkola;mkola@othisisa.gr;mkola387;Infovest;User;Nova
+MARIA MPARKA;mmparka;mmparka@othisisa.gr;mmparka356;Infovest;User;Nova
+MARIA NTATSI;mntatsi;mntatsi@othisisa.gr;mntatsi295;Infovest;User;Nova
+MARIOS TSAGKOS;mtsagkos;mtsagkos@othisisa.gr;mtsagkos726;Infovest;User;Nova
+MARKOS VOUROS;mvouros;mvouros@othisisa.gr;mvouros269;Infovest;Team Leader;Nova
+MPRIKENA MARKOU;mmarkou;mmarkou@othisisa.gr;mmarkou939;Infovest;User;Nova
+ORESTIS KOLETSOS;okoletsos;okoletsos@othisisa.gr;okoletsos563;Infovest;User;Nova
+OURANIA KAFTANI;okaftani;okaftani@othisisa.gr;okaftani427;Infovest;User;Nova
+PANAGIOTIS TSIAVOS;ptsiavos2;ptsiavos2@othisisa.gr;ptsiavos2242;Infovest;User;Nova
+RANIA ZOULI;rzouli;rzouli@othisisa.gr;rzouli54;Infovest;User;Nova
+SIA DERVISI;sdervisi;sdervisi@othisisa.gr;sdervisi703;Infovest;User;Nova
+SOPHIA TOMANI;stomani;stomani@othisisa.gr;stomani960;Infovest;User;Nova
+SOUFATI VASILIKI;svasiliki;svasiliki@othisisa.gr;svasiliki792;Infovest;User;Nova
+SOUZANA ANAGNOSTI;sanagnosti;sanagnosti@othisisa.gr;sanagnosti257;Infovest;User;Nova
+SPIROS MIRAKIS;smirakis;smirakis@othisisa.gr;smirakis603;Infovest;Team Leader;Nova
+SPYROS KANAKIS;skanakis;skanakis@othisisa.gr;skanakis577;Infovest;User;Nova
+STELLA ROKKO;srokko;srokko@othisisa.gr;srokko294;Infovest;User;Nova
+THEODORA MONE;thmone;thmone@othisisa.gr;thmone484;Infovest;User;Nova
+VALERIA POLYZOU;vpolyzou;vpolyzou@othisisa.gr;vpolyzou250;Infovest;User;Nova
+VASILIKI MPALOURDOU;vbalourdou;vbalourdou@othisisa.gr;vbalourdou579;Infovest;User;Nova
+VIKTORIA ANTONI;vantoni;vantoni@othisisa.gr;vantoni831;Infovest;User;Nova
+ABRA KOTSIA;akotsia;akotsia@othisisa.gr;akotsia334;Infovest;Backoffice;Other
+ARTA SEFERI;aseferi;aseferi@othisisa.gr;aseferi491;Infovest;Backoffice;Other
+DIMA ORNELA;dornela;dornela@othisisa.gr;dornela162;Infovest;Backoffice;Other
+EMMANOUELA LALA;elala;elala@infovest.al;elala213;Infovest;Backoffice;Other
+FOTINI TSAOUSI;ftsaousi;ftsaousi@othisisa.gr;ftsaousi621;Infovest;Backoffice;Other
+IOANNA CHAKA;ichaka;ichaka@othisisa.gr;ichaka8;Infovest;Backoffice;Other
+IOANNA MOUFALI;imoufali;imoufali@othisisa.gr;imoufali183;Infovest;Backoffice;Other
+KATERINA RAMAI;kramai;kramai@othisisa.gr;kramai472;Infovest;Backoffice;Other
+KEISI KENTRO;kkentro;kkentro@othisisa.gr;kkentro375;Infovest;Backoffice;Other
+STELLA LOLAI;slolai;slolai@othisisa.gr;slolai537;Infovest;Backoffice;Other
+ODISSEAS GIANNOPOULOS;ogiannopoulos;ogiannopoulos@othisisa.gr;ogiannopoulos277;Infovest;Team Leader;Nova
+KALLIOPI LAMPRAKI;klampraki;klampraki@othisisa.gr;klampraki154;Infovest;Team Leader;Nova
+PAYLINA KAPENI;pkapeni;pkapeni@othisisa.gr;pkapeni884;Infovest;Team Leader;Nova
+MARIA TRIANTAFILLOU;mtriantafillou;mtriantafillou@othisisa.gr;mtriantafillou820;Infovest;Team Leader;Nova
+CHRISTOS BOUZANIS;chbouzanis;chbouzanis@othisisa.gr;chbouzanis609;Infovest;Team Leader;Nova
+ALMPI DRAKOS;adrakos;adrakos@othisisa.gr;adrakos847;Kontakt;User;Nova
+ANDREAS SALIS;asalis;asalis@othisisa.gr;asalis300;Kontakt;User;Nova
+ANTZELA MPEKIRI;ampekiri;ampekiri@othisisa.gr;ampekiri485;Kontakt;User;Nova
+ANTZELA TZOUTZI;atzoutzi;atzoutzi@othisisa.gr;atzoutzi276;Kontakt;User;Nova
+DANAI THEODORIDOU;dtheodoridou;dtheodoridou@othisisa.gr;dtheodoridou10;Kontakt;User;Nova
+ILIAS KIRIAKOS;ikiriakos;ikiriakos@othisisa.gr;ikiriakos917;Kontakt;User;Nova
+KATERINA OUZEIRI;kouzeiri;kouzeiri@othisisa.gr;kouzeiri865;Kontakt;User;Nova
+MICHALIS ANAGNOSTOPOULOS;managnostopoulos;managnostopoulos@othisisa.gr;managnostopoulos547;Kontakt;User;Nova
+POLYXENI ROKALI;prokali;prokali@othisisa.gr;prokali723;Kontakt;User;Nova
+VIKTORIA MERKO;vmerko;vmerko@othisisa.gr;vmerko191;Kontakt;User;Nova
+ANTZELA CHOTZA;achotza;achotza@othisisa.gr;achotza382;Korcavest;User;Nova
+ARIS MBEZAS;ampezas;ampezas@othisisa.gr;ampezas592;Korcavest;User;Nova
+CHRISTIANA TZAFELARI;chtzafelari;chtzafelari@othisisa.gr;chtzafelari718;Korcavest;User;Nova
+DIMITRIS ASIMAKOPOULOS;dasimakopoulos;dasimakopoulos@othisisa.gr;dasimakopoulos634;Korcavest;User;Nova
+DORA TZAKI;dtzaki;dtzaki@othisisa.gr;dtzaki977;Korcavest;User;Nova
+ELENI MPAZAKI;ebazaki;ebazaki@othisisa.gr;ebazaki860;Korcavest;User;Nova
+EYI NIKOLAOU;enikolaou;enikolaou@othisisa.gr;enikolaou195;Korcavest;User;Nova
+GIANNIS ZOULALIS;gzoulalis;gzoulalis@othisisa.gr;gzoulalis861;Korcavest;User;Nova
+KRISTI DAMO;kdamo;kdamo@othisisa.gr;kdamo910;Korcavest;User;Nova
+LINTA NASTOU;lnastou;lnastou@othisisa.gr;lnastou444;Korcavest;User;Nova
+LYDIA SIFAKI;lsifaki;lsifaki@othisisa.gr;lsifaki539;Korcavest;User;Nova
+MYRTO VAKALI;mvakali;mvakali@othisisa.gr;mvakali630;Korcavest;User;Nova
+NIKOLAOS MPOZANIS;nmpozanis;nmpozanis@othisisa.gr;nmpozanis753;Korcavest;User;Nova
+ORESTIS CHATZISALARIS;ochatzisalaris;ochatzisalaris@othisisa.gr;ochatzisalaris281;Korcavest;User;Nova
+RENATOS TSOUKOLARIS;rtsoukolaris;rtsoukolaris@othisisa.gr;rtsoukolaris408;Korcavest;User;Nova
+SARA ROUSOU;srousou;srousou@othisisa.gr;srousou307;Korcavest;User;Nova
+STAVROS KONTOS;skontos;skontos@othisisa.gr;skontos832;Korcavest;User;Nova
+STAVROULA PANAKI;spanaki;spanaki@othisisa.gr;spanaki645;Korcavest;User;Nova
+POLIANA MPAME;pmpame;pmpame@othisisa.gr;pmpame859;Korcavest;User;Nova
