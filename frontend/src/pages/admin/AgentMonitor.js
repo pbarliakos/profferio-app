@@ -15,11 +15,15 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
+import ArrowBackIcon from "@mui/icons-material/ArrowBack"; // ✅ Import ArrowBack
 
-const AgentMonitor = ({ darkMode }) => { // Πρόσθεσα το darkMode prop αν το χρειάζεσαι για styling
+const AgentMonitor = ({ darkMode }) => { 
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "info" });
+  
+  const navigate = useNavigate(); // ✅ Initialize hook
 
   const fetchSessions = async () => {
     setLoading(true);
@@ -43,13 +47,13 @@ const AgentMonitor = ({ darkMode }) => { // Πρόσθεσα το darkMode prop 
       await axios.post(
         "/api/auth/force-logout",
         { 
-            logId: sessionId, // ✅ Στέλνουμε το συγκεκριμένο Session ID
-            userId: userId    // ✅ Στέλνουμε και το User ID για το κλείσιμο του TimeDaily
+            logId: sessionId, 
+            userId: userId    
         },
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       setSnackbar({ open: true, message: "Ο agent αποσυνδέθηκε!", severity: "success" });
-      fetchSessions(); // Refresh της λίστας
+      fetchSessions(); 
     } catch (err) {
       console.error(err);
       setSnackbar({ open: true, message: "Αποτυχία force logout.", severity: "error" });
@@ -58,9 +62,22 @@ const AgentMonitor = ({ darkMode }) => { // Πρόσθεσα το darkMode prop 
 
   return (
     <Box p={2}>
-      <Typography variant="h5" gutterBottom fontWeight="bold">
-        👀 Παρακολούθηση Ενεργών Agent Sessions
-      </Typography>
+      
+      {/* ✅ Header with Back Button */}
+      <Box display="flex" alignItems="center" gap={2} mb={2}>
+        <Button 
+            startIcon={<ArrowBackIcon />} 
+            onClick={() => navigate("/admin")}
+            variant="outlined"
+            size="small"
+        >
+            Back to Dashboard
+        </Button>
+        <Typography variant="h5" fontWeight="bold">
+            👀 Παρακολούθηση Ενεργών Agent Sessions
+        </Typography>
+      </Box>
+
       <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
         {loading ? (
           <Box display="flex" justifyContent="center" p={3}>

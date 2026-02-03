@@ -31,16 +31,15 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-// Σταθερά δεδομένα εκτός component
+// ✅ 1. ΑΛΛΑΓΗ ΕΔΩ: Προσθέσαμε το property 'external'
 const projectButtons = [
-  { label: "Time Tracker", path: "/My-Time" },
-  { label: "Nova FTTH email", path: "/nova" },
-  { label: "Agent Monitor", path: "/admin/AgentMonitor" },
-  { label: "Login Logs", path: "/admin/loginlogs" },
-  { label: "Time Tracker", path: "/admin/timelogs" },
+  { label: "Time Tracker", path: "/My-Time", external: true }, // Θα ανοίξει σε νέο tab
+  { label: "Nova FTTH email", path: "/nova", external: false },
+  { label: "Agent Monitor", path: "/admin/AgentMonitor", external: false },
+  { label: "Login Logs", path: "/admin/loginlogs", external: false },
+  { label: "Time Tracker Report", path: "/admin/timelogs", external: false },
 ];
 
-// ✅ Validation helpers
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const isBlank = (v) => !v || !String(v).trim();
 
@@ -66,7 +65,6 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
 
-  // ✅ Ενημερωμένο state με το πεδίο company
   const [newUser, setNewUser] = useState({
     fullName: "",
     username: "",
@@ -74,7 +72,7 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
     password: "",
     role: "user",
     project: "alterlife",
-    company: "Othisi", // Default τιμή
+    company: "Othisi",
   });
 
   const [openDialog, setOpenDialog] = useState(false);
@@ -87,7 +85,6 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
   const userInfo = JSON.parse(localStorage.getItem("user")) || {};
   const { fullName, role } = userInfo;
 
-  // ✅ Fetch Users
   const fetchUsers = useCallback(async () => {
     try {
       const res = await axios.get("/api/users", {
@@ -103,7 +100,6 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
     fetchUsers();
   }, [fetchUsers]);
 
-  // ✅ Stats Calculation
   const stats = useMemo(() => {
     const total = users.length;
     const projects = users.reduce((acc, user) => {
@@ -117,7 +113,6 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
     return { total, projects, roles };
   }, [users]);
 
-  // ✅ Filtering
   const filteredUsers = useMemo(() => {
     return users.filter((u) =>
       `${u.username} ${u.fullName} ${u.email} ${u.company || ""}`
@@ -129,7 +124,6 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
   const handleEdit = useCallback((user) => {
     setEditingUser(user);
     setFieldErrors({});
-    // Φέρνουμε όλα τα πεδία, το company θα έρθει από το user object αν υπάρχει
     setNewUser({
       ...user,
       company: user.company || "Othisi",
@@ -155,21 +149,18 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
   const handleSave = async () => {
     try {
       setFieldErrors({});
-
       const payload = sanitizeUserPayload(newUser);
-
-      // ✅ required fields (όχι μόνο κενά)
       const errors = {};
-      if (isBlank(payload.fullName)) errors.fullName = "Υποχρεωτικό πεδίο (όχι μόνο κενά).";
-      if (isBlank(payload.username)) errors.username = "Υποχρεωτικό πεδίο (όχι μόνο κενά).";
-      if (isBlank(payload.email)) errors.email = "Υποχρεωτικό πεδίο (όχι μόνο κενά).";
+      
+      if (isBlank(payload.fullName)) errors.fullName = "Υποχρεωτικό πεδίο.";
+      if (isBlank(payload.username)) errors.username = "Υποχρεωτικό πεδίο.";
+      if (isBlank(payload.email)) errors.email = "Υποχρεωτικό πεδίο.";
       if (!isBlank(payload.email) && !emailRegex.test(payload.email))
-        errors.email = "Μη έγκυρο email (π.χ. name@domain.com).";
+        errors.email = "Μη έγκυρο email.";
       if (isBlank(payload.company)) errors.company = "Υποχρεωτικό πεδίο.";
 
-      // ✅ password μόνο όταν δημιουργείς χρήστη
       if (!editingUser && isBlank(newUser.password)) {
-        errors.password = "Υποχρεωτικό πεδίο για νέο χρήστη.";
+        errors.password = "Υποχρεωτικό πεδίο.";
       }
 
       if (Object.keys(errors).length) {
@@ -178,7 +169,6 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
         return;
       }
 
-      // ✅ Αν κάνεις edit και password είναι κενό → ΜΗΝ το στείλεις (να μην γίνεται overwrite)
       const finalPayload = { ...payload };
       if (editingUser && isBlank(newUser.password)) {
         delete finalPayload.password;
@@ -209,13 +199,7 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
   const handleLogout = async () => {
     try {
       if (token) {
-        await axios.post(
-          "/api/auth/logout",
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        await axios.post("/api/auth/logout", {}, { headers: { Authorization: `Bearer ${token}` } });
       }
     } catch (err) {
       console.error("Logout API failed", err);
@@ -225,7 +209,6 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
     }
   };
 
-  // ✅ Updated Export with Company
   const handleExport = () => {
     if (!users.length) return;
     const headers = ["Full Name", "Username", "Email", "Role", "Project", "Company"];
@@ -241,13 +224,12 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
     document.body.removeChild(link);
   };
 
-  // ✅ Updated Columns with Company
   const columns = useMemo(
     () => [
       { field: "fullName", headerName: "Ονοματεπώνυμο", flex: 1 },
       { field: "username", headerName: "Username", flex: 1 },
       { field: "email", headerName: "Email", flex: 1 },
-      { field: "company", headerName: "Εταιρεία", flex: 1 }, // Νέα Στήλη
+      { field: "company", headerName: "Εταιρεία", flex: 1 },
       { field: "role", headerName: "Ρόλος", flex: 1 },
       { field: "project", headerName: "Project", flex: 1 },
       {
@@ -289,7 +271,16 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
                 variant="outlined"
                 size="small"
                 endIcon={<OpenInNewIcon />}
-                onClick={() => window.open(btn.path, "_blank")}
+                // ✅ 2. ΑΛΛΑΓΗ ΕΔΩ: Έλεγχος αν είναι external ή internal
+                onClick={() => {
+                   if (btn.external) {
+                      // Νέο Tab
+                      window.open(btn.path, "_blank"); 
+                   } else {
+                      // Ίδιο Tab (React Router)
+                      navigate(btn.path); 
+                   }
+                }}
               >
                 {btn.label}
               </Button>
@@ -319,17 +310,13 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
         <StatCard title="Σύνολο Χρηστών" value={stats.total} icon={<PeopleIcon color="primary" />} bgcolor="#e3f2fd" />
         <StatCard
           title="Χρήστες ανά Project"
-          value={Object.entries(stats.projects)
-            .map(([k, v]) => `${k}: ${v}`)
-            .join(", ")}
+          value={Object.entries(stats.projects).map(([k, v]) => `${k}: ${v}`).join(", ")}
           icon={<WorkspacesIcon color="secondary" />}
           bgcolor="#f3e5f5"
         />
         <StatCard
           title="Χρήστες ανά Ρόλο"
-          value={Object.entries(stats.roles)
-            .map(([k, v]) => `${k}: ${v}`)
-            .join(", ")}
+          value={Object.entries(stats.roles).map(([k, v]) => `${k}: ${v}`).join(", ")}
           icon={<GroupsIcon color="success" />}
           bgcolor="#e8f5e9"
         />
@@ -344,7 +331,6 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
           onClick={() => {
             setEditingUser(null);
             setFieldErrors({});
-            // Reset form με το νέο default company
             setNewUser({
               fullName: "",
               username: "",
@@ -389,11 +375,9 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
             margin="dense"
             value={newUser.fullName}
             onChange={(e) => setNewUser({ ...newUser, fullName: e.target.value })}
-            onBlur={(e) => setNewUser({ ...newUser, fullName: e.target.value.trim() })}
             error={!!fieldErrors.fullName}
             helperText={fieldErrors.fullName}
           />
-
           <TextField
             id="username"
             label="Username"
@@ -401,11 +385,9 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
             margin="dense"
             value={newUser.username}
             onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-            onBlur={(e) => setNewUser({ ...newUser, username: e.target.value.trim() })}
             error={!!fieldErrors.username}
             helperText={fieldErrors.username}
           />
-
           <TextField
             id="email"
             label="Email"
@@ -413,11 +395,9 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
             margin="dense"
             value={newUser.email}
             onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-            onBlur={(e) => setNewUser({ ...newUser, email: e.target.value.trim() })}
             error={!!fieldErrors.email}
             helperText={fieldErrors.email}
           />
-
           <TextField
             id="password"
             label="Password"
@@ -429,8 +409,6 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
             error={!!fieldErrors.password}
             helperText={editingUser ? "Άφησέ το κενό αν δεν θες να αλλάξει." : fieldErrors.password}
           />
-
-          {/* ✅ ΝΕΟ ΠΕΔΙΟ: COMPANY */}
           <TextField
             select
             label="Εταιρεία"
@@ -448,8 +426,6 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
             <MenuItem value="Gemini">Gemini</MenuItem>
             <MenuItem value="Kontakt">Kontakt</MenuItem>
           </TextField>
-
-          {/* ✅ ΕΝΗΜΕΡΩΜΕΝΟΙ ΡΟΛΟΙ */}
           <TextField
             select
             label="Ρόλος"
@@ -464,8 +440,6 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
             <MenuItem value="Backoffice">Backoffice</MenuItem>
             <MenuItem value="Team Leader">Team Leader</MenuItem>
           </TextField>
-
-          {/* ✅ ΕΝΗΜΕΡΩΜΕΝΑ PROJECTS */}
           <TextField
             select
             label="Project"
@@ -484,7 +458,6 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
             <MenuItem value="Nova FTTH">Nova FTTH</MenuItem>
           </TextField>
         </DialogContent>
-
         <DialogActions>
           <Button onClick={closeDialog}>Άκυρο</Button>
           <Button variant="contained" onClick={handleSave}>

@@ -137,7 +137,7 @@ router.post("/heartbeat", async (req, res) => {
 // 5. CRON JOB: Force Close Inactive Sessions
 router.post("/force-close-inactive-sessions", async (req, res) => {
   try {
-    const INACTIVE_SECONDS = 300; 
+    const INACTIVE_SECONDS = 10; 
     const threshold = new Date(Date.now() - INACTIVE_SECONDS * 1000);
 
     const deadLogs = await LoginLog.find({

@@ -18,7 +18,7 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
-
+import ArrowBackIcon from "@mui/icons-material/ArrowBack"; // ✅ Import ArrowBack
 
 const LoginLogs = () => {
   const [logs, setLogs] = useState([]);
@@ -35,6 +35,8 @@ const LoginLogs = () => {
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("theme") === "dark";
   });
+
+  const navigate = useNavigate(); // Hook for navigation
 
   const theme = createTheme({
     palette: {
@@ -163,8 +165,6 @@ const LoginLogs = () => {
     return Object.values(stats);
   };
 
-
-  const navigate = useNavigate();
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -193,7 +193,19 @@ const LoginLogs = () => {
         <Box p={2}>
           {/* 🔝 User info + theme + logout */}
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h5">🔐 Login / Logout Logs</Typography>
+            
+            {/* ✅ Back Button + Title Group */}
+            <Box display="flex" alignItems="center" gap={2}>
+                <Button 
+                    startIcon={<ArrowBackIcon />} 
+                    onClick={() => navigate("/admin")}
+                    variant="outlined"
+                    size="small"
+                >
+                    Back to Dashboard
+                </Button>
+                <Typography variant="h5">🔐 Login / Logout Logs</Typography>
+            </Box>
 
             <Box display="flex" alignItems="center" gap={2}>
               <Typography variant="body2">
@@ -211,14 +223,14 @@ const LoginLogs = () => {
                 {darkMode ? "LIGHT" : "DARK"}
               </Button>
 
-  <Button
-    variant="outlined"
-    startIcon={<LogoutIcon />}
-    color="error"
-    onClick={handleLogout}
-  >
-    Logout
-  </Button>
+              <Button
+                variant="outlined"
+                startIcon={<LogoutIcon />}
+                color="error"
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
             </Box>
           </Box>
 
