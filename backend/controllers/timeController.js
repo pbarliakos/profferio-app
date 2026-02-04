@@ -252,3 +252,30 @@ exports.updateLog = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+// ✅ TEAM MONITOR FUNCTION
+exports.getTeamMonitor = async (req, res) => {
+  try {
+    const leaderProject = req.user.project; 
+    
+    // Βρίσκουμε τη σημερινή ημερομηνία (String format)
+    const dateKey = DateTime.now().setZone(TZ).toFormat("yyyy-MM-dd");
+
+    // Ζητάμε όλα τα logs της ημέρας και κάνουμε populate τα στοιχεία του User
+    const logs = await TimeDaily.find({ dateKey })
+      .populate('userId', 'fullName username project role') 
+      .lean();
+
+    // Φιλτράρισμα: Κρατάμε μόνο όσους είναι στο ίδιο project με τον Leader
+    const teamLogs = logs.filter(log => {
+      return log.userId && log.userId.project === leaderProject; 
+    });
+
+    res.json(teamLogs);
+
+  } catch (err) {
+    console.error("Team Monitor Error:", err);
+    res.status(500).json({ error: "Server Error" });
+  }
+};

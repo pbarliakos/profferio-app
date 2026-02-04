@@ -16,6 +16,7 @@ import UserDashboard from "./pages/UserDashboard";
 import AdminTimeLogs from "./pages/admin/AdminTimeLogs";
 import LoginLogs from "./pages/admin/LoginLogs";
 import AgentMonitor from "./pages/admin/AgentMonitor";
+import TeamMonitor from "./pages/TeamMonitor";
 
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -123,6 +124,7 @@ function App() {
           {/* 🛡️ Tools */}
           <Route element={<ProtectedRoute />}>
             <Route path="/my-time" element={<MyTime darkMode={darkMode} setDarkMode={setDarkMode} />} />
+            <Route path="/team-monitor" element={<TeamMonitor darkMode={darkMode} setDarkMode={setDarkMode} />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedProject="alterlife" />}>

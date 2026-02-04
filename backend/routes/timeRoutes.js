@@ -14,6 +14,7 @@ if (!protect || !isAdmin) {
 router.get("/today", protect, timeController.getTodayStatus);
 router.post("/action", protect, timeController.handleAction);
 router.get("/history", protect, timeController.getHistory);
+router.get('/team-monitor', protect, timeController.getTeamMonitor);
 
 // --- ADMIN ROUTES ---
 // Τώρα το 'isAdmin' υπάρχει και δεν θα πετάει error
