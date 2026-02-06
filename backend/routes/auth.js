@@ -11,6 +11,9 @@ const { protect } = require("../middleware/authMiddleware");
 const LoginLog = require("../models/LoginLog");
 const TimeDaily = require("../models/TimeDaily");
 
+// Χρειαζόμαστε το User model για να ελέγξουμε τα roles
+const User = require("../models/User"); 
+
 const TZ = "Europe/Athens";
 
 // ✅ Helper: Κλείνει τη μέρα με το ΝΕΟ Schema
@@ -137,7 +140,7 @@ router.post("/heartbeat", async (req, res) => {
 // 5. CRON JOB: Force Close Inactive Sessions
 router.post("/force-close-inactive-sessions", async (req, res) => {
   try {
-    const INACTIVE_SECONDS = 3600; 
+    const INACTIVE_SECONDS = 90;
     const threshold = new Date(Date.now() - INACTIVE_SECONDS * 1000);
 
     const deadLogs = await LoginLog.find({
@@ -277,5 +280,88 @@ router.post("/auto-close-past-days", async (req, res) => {
   }
 });
 
+// ✅ 9. MIDNIGHT HARD STOP (ΕΚΤΟΣ ADMINS)
+// Καλείται από το Cron Job στις 23:59
+router.post("/midnight-force-close", async (req, res) => {
+  const now = new Date();
+  
+  try {
+    console.log("🕛 Midnight Protocol initiated...");
+
+    // 1. Βρίσκουμε όλους τους χρήστες που ΔΕΝ είναι admin
+    const nonAdminUsers = await User.find({ role: { $ne: "admin" } }).select("_id");
+    const nonAdminIds = nonAdminUsers.map(u => u._id);
+
+    if (nonAdminIds.length === 0) {
+      return res.json({ message: "No non-admin users found to close." });
+    }
+
+    // 2. Κλείνουμε τα LoginLogs (Sessions) για αυτούς τους χρήστες
+    // Ενημερώνουμε όλα τα ανοιχτά logs βάζοντας logoutAt = τώρα
+    const logsResult = await LoginLog.updateMany(
+      { 
+        userId: { $in: nonAdminIds }, 
+        logoutAt: { $exists: false } 
+      },
+      { 
+        $set: { 
+          logoutAt: now,
+          forced: true // Προαιρετικό flag για να ξέρουμε ότι έκλεισε βίαια
+        } 
+      }
+    );
+
+    // 3. Κλείνουμε τα TimeDaily (Χρόνους Εργασίας)
+    // Πρέπει να τα βρούμε ένα-ένα για να υπολογίσουμε σωστά τον χρόνο που πέρασε
+    const activeTimeLogs = await TimeDaily.find({
+      userId: { $in: nonAdminIds },
+      status: { $in: ["WORKING", "BREAK"] }
+    });
+
+    let timeClosedCount = 0;
+
+    for (const daily of activeTimeLogs) {
+      let elapsed = 0;
+      
+      if (daily.lastActionAt) {
+        elapsed = now.getTime() - new Date(daily.lastActionAt).getTime();
+        // Αν για κάποιο λόγο βγει αρνητικό (σπάνιο), το μηδενίζουμε
+        if (elapsed < 0) elapsed = 0;
+      }
+
+      // Προσθέτουμε τον χρόνο στο σωστό bucket
+      if (daily.status === "WORKING") {
+        daily.storedWorkMs += elapsed;
+      } else if (daily.status === "BREAK") {
+        daily.storedBreakMs += elapsed;
+      }
+
+      // Κλείσιμο ημέρας
+      daily.status = "CLOSED";
+      daily.lastLogoutAt = now;
+      daily.lastActionAt = now;
+      daily.logs.push({ 
+        action: "MIDNIGHT_FORCE_STOP", 
+        timestamp: now,
+        details: "System auto-closed day at 23:59"
+      });
+
+      await daily.save();
+      timeClosedCount++;
+    }
+
+    console.log(`✅ Midnight Cleanup: Closed ${logsResult.modifiedCount} sessions and ${timeClosedCount} time records (Non-Admins only).`);
+    
+    res.json({ 
+      message: "Midnight cleanup complete", 
+      closedSessions: logsResult.modifiedCount, 
+      closedTimeRecords: timeClosedCount 
+    });
+
+  } catch (err) {
+    console.error("❌ Midnight cleanup error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;

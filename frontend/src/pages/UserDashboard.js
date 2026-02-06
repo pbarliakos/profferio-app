@@ -109,7 +109,7 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
             <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex' }}>
               <Card sx={{ width: '100%', ...tileStyle }}>
                 <CardActionArea 
-                  onClick={() => window.open("/my-time", "_blank")}
+                  onClick={() => navigate("/my-time")}
                   sx={{ height: '100%', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
                 >
                   <AccessTimeIcon sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
