@@ -11,6 +11,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Nova from "./pages/Nova";
 import MyTime from "./pages/MyTime"; 
 import UserDashboard from "./pages/UserDashboard";
+import SalesTools from "./pages/SalesTools";
 
 // Admin Σελίδες
 import AdminTimeLogs from "./pages/admin/AdminTimeLogs";
@@ -125,6 +126,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/my-time" element={<MyTime darkMode={darkMode} setDarkMode={setDarkMode} />} />
             <Route path="/team-monitor" element={<TeamMonitor darkMode={darkMode} setDarkMode={setDarkMode} />} />
+            <Route path="/nova/sales-tools" element={<SalesTools darkMode={darkMode} setDarkMode={setDarkMode} />} />
           </Route>
 
           <Route element={<ProtectedRoute allowedProject="alterlife" />}>

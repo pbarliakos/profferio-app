@@ -10,6 +10,7 @@ import PauseIcon from '@mui/icons-material/Pause';
 import StopIcon from '@mui/icons-material/Stop';
 import CoffeeIcon from '@mui/icons-material/Coffee';
 import LogoutIcon from '@mui/icons-material/Logout';
+import DashboardIcon from '@mui/icons-material/Dashboard'; // ✅ New Import
 import { useNavigate } from "react-router-dom";
 
 // Helper για μετατροπή ms σε HH:MM:SS
@@ -132,11 +133,34 @@ const MyTime = ({ darkMode, setDarkMode }) => {
     }
   };
 
+  // ✅ New Handler for Dashboard Button
+  const handleDashboardClick = () => {
+    const role = localStorage.getItem("role");
+    if (role === "admin") {
+      // Έλεγχος αν χρησιμοποιούμε HashRouter (#) ή BrowserRouter
+      const target = window.location.hash ? "/#/admin" : "/admin";
+      window.open(target, "_blank");
+    } else {
+      const target = window.location.hash ? "/#/dashboard" : "/dashboard";
+      window.open(target, "_blank");
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {/* Header */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4" fontWeight="bold" color="primary">Time Tracker</Typography>
+        
+        {/* ✅ NEW DASHBOARD BUTTON (CENTER) */}
+        <Button 
+          variant="outlined" 
+          startIcon={<DashboardIcon />} 
+          onClick={handleDashboardClick}
+        >
+          DASHBOARD
+        </Button>
+
         <Box>
             <Button variant="outlined" onClick={() => setDarkMode(!darkMode)} sx={{ mr: 2 }}>
                {darkMode ? "LIGHT" : "DARK"}

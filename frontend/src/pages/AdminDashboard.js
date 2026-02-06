@@ -434,11 +434,11 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
             value={newUser.role}
             onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
           >
-            <MenuItem value="admin">Admin</MenuItem>
-            <MenuItem value="manager">Manager</MenuItem>
-            <MenuItem value="user">User</MenuItem>
-            <MenuItem value="Backoffice">Backoffice</MenuItem>
-            <MenuItem value="Team Leader">Team Leader</MenuItem>
+            <MenuItem value="admin">admin</MenuItem>
+            <MenuItem value="manager">manager</MenuItem>
+            <MenuItem value="user">user</MenuItem>
+            <MenuItem value="backoffice">backoffice</MenuItem>
+            <MenuItem value="team leader">team leader</MenuItem>
           </TextField>
           <TextField
             select
@@ -448,14 +448,14 @@ const AdminDashboard = ({ darkMode, setDarkMode }) => {
             value={newUser.project}
             onChange={(e) => setNewUser({ ...newUser, project: e.target.value })}
           >
-            <MenuItem value="alterlife">Alterlife</MenuItem>
-            <MenuItem value="nova">Nova</MenuItem>
-            <MenuItem value="admin">Admin</MenuItem>
-            <MenuItem value="time">TimeTrack</MenuItem>
-            <MenuItem value="other">Other</MenuItem>
-            <MenuItem value="Epic">Epic</MenuItem>
-            <MenuItem value="Instacar">Instacar</MenuItem>
-            <MenuItem value="Nova FTTH">Nova FTTH</MenuItem>
+            <MenuItem value="alterlife">alterlife</MenuItem>
+            <MenuItem value="nova">nova</MenuItem>
+            <MenuItem value="admin">admin</MenuItem>
+            <MenuItem value="time">timetrack</MenuItem>
+            <MenuItem value="other">other</MenuItem>
+            <MenuItem value="epic">epic</MenuItem>
+            <MenuItem value="instacar">instacar</MenuItem>
+            <MenuItem value="nova ftth">nova ftth</MenuItem>
           </TextField>
         </DialogContent>
         <DialogActions>

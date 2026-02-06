@@ -16,7 +16,8 @@ import {
   Dashboard as DashboardIcon,
   Groups as GroupsIcon, 
   LightMode, 
-  DarkMode 
+  DarkMode,
+  Handyman as HandymanIcon // ✅ ΤΟ ΝΕΟ ΕΙΚΟΝΙΔΙΟ ΓΙΑ ΤΑ TOOLS
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -47,6 +48,9 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
   const showTimeTracker = true;
   const showTeamMonitor = userRole === "team leader"; 
   const showNovaTool = projectLower.includes("nova");
+  
+  // ✅ LOGIC: Εμφάνιση Sales Tools αν project=nova Ή role=backoffice
+  const showSalesTools = projectLower === "nova" || userRole === "backoffice";
 
   // ✅ Κοινό στυλ για όλα τα Tiles για να είναι ΙΔΙΑ
   const tileStyle = {
@@ -154,6 +158,28 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Εργαλείο αποστολής email για κουπόνια Nova.
+                  </Typography>
+                </CardActionArea>
+              </Card>
+            </Grid>
+          )}
+
+          {/* ✅ TILE 4: SALES TOOLS (ΝΕΟ ICON) */}
+          {showSalesTools && (
+            <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex' }}>
+              <Card sx={{ width: '100%', ...tileStyle }}>
+                <CardActionArea 
+                  onClick={() => navigate("/nova/sales-tools")}
+                  sx={{ height: '100%', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
+                >
+                  {/* ΕΔΩ ΑΛΛΑΞΕ Η ΕΙΚΟΝΑ ΣΕ ΕΙΚΟΝΙΔΙΟ */}
+                  <HandymanIcon sx={{ fontSize: 80, color: 'secondary.main', mb: 2 }} />
+                  
+                  <Typography variant="h5" fontWeight="bold" gutterBottom>
+                    Sales Tools
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Links, Files & Contacts
                   </Typography>
                 </CardActionArea>
               </Card>
