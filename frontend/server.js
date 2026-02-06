@@ -1,17 +1,27 @@
 const express = require('express');
 const path = require('path');
+const { createProxyMiddleware } = require('http-proxy-middleware'); // ✅ ΝΕΟ
+
 const app = express();
 
-// Σερβίρουμε τον φάκελο build ως στατικά αρχεία
+// ✅ Ρύθμιση Proxy: Ό,τι ξεκινάει από /api, στείλ' το στο Backend (5000)
+app.use(
+  '/api',
+  createProxyMiddleware({
+    target: 'http://localhost:5000', // Πού είναι το backend σου
+    changeOrigin: true,
+  })
+);
+
+// Δείχνουμε τον φάκελο build για τα στατικά αρχεία
 app.use(express.static(path.join(__dirname, 'build')));
 
-// Για οποιοδήποτε άλλο request, στέλνουμε το index.html (για να δουλεύει το React Router)
+// Για οποιοδήποτε άλλο URL, στέλνουμε το React app
 app.get('*', function (req, res) {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
-// Ξεκινάμε στη θύρα 3000
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Frontend running on port ${PORT}`);
+// Ξεκινάμε
+app.listen(3000, '127.0.0.1', () => {
+  console.log('Frontend is running on 127.0.0.1:3000');
 });

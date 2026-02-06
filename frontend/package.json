@@ -20,6 +20,7 @@
     "dayjs-plugin-utc": "^0.1.2",
     "dotenv": "^17.2.0",
     "express": "^5.2.1",
+    "http-proxy-middleware": "^3.0.5",
     "luxon": "^3.7.2",
     "mongoose": "^8.16.4",
     "react": "^19.1.0",

@@ -40,9 +40,9 @@ exports.register = async (req, res) => {
 };
 
 // Login
+// Login
 exports.login = async (req, res) => {
   try {
-    // ✅ 1. Υποστήριξη για Identifier (Email ή Username)
     const inputIdentifier = req.body.identifier || req.body.username;
     const { password } = req.body;
 
@@ -50,8 +50,6 @@ exports.login = async (req, res) => {
         return res.status(400).json({ message: "Παρακαλώ εισάγετε Username/Email και Password" });
     }
 
-    // ✅ 2. Αναζήτηση χρήστη (Case insensitive για το username/email)
-    // Χρησιμοποιούμε regex για να αγνοήσουμε κεφαλαία/μικρά στο username κατά την αναζήτηση
     const user = await User.findOne({
         $or: [
             { email: { $regex: new RegExp(`^${inputIdentifier}$`, 'i') } },
@@ -61,42 +59,56 @@ exports.login = async (req, res) => {
 
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
-    // Έλεγχος active session
+    // ✅ ΒΕΛΤΙΩΜΕΝΟΣ ΕΛΕΓΧΟΣ ACTIVE SESSION
+    // Βρες αν υπάρχει ανοιχτό session
     const existingSession = await LoginLog.findOne({
       userId: user._id,
       logoutAt: { $exists: false }
     });
 
-    // Επιτρέπουμε πολλαπλά sessions ΜΟΝΟ στους admins
-    // ✅ Ασφαλής έλεγχος με toLowerCase()
     const userRole = user.role ? user.role.toLowerCase() : "user";
     
+    // Αν υπάρχει ανοιχτό session και ο χρήστης ΔΕΝ είναι admin
     if (existingSession && userRole !== "admin") {
-      return res.status(403).json({
-        message: "Υπάρχει ήδη ενεργή συνεδρία. Μόνο ένα session επιτρέπεται."
-      });
+        
+        // Υπολογισμός: Πόση ώρα έχει περάσει από το lastSeen (σε λεπτά);
+        const lastSeenTime = new Date(existingSession.lastSeen).getTime();
+        const currentTime = new Date().getTime();
+        const diffMinutes = (currentTime - lastSeenTime) / (1000 * 60);
+
+        // 🛑 ΑΛΛΑΓΗ ΕΔΩ: Αν είναι ενεργός τα τελευταία 5 λεπτά, τότε μόνο τον μπλοκάρουμε.
+        // Αν έχει περάσει 5λεπτο, θεωρούμε ότι το προηγούμενο tab "πέθανε" και τον αφήνουμε να μπει.
+        if (diffMinutes < 2) {
+             return res.status(403).json({
+                message: "Υπάρχει ήδη ενεργή συνεδρία σε άλλη συσκευή/tab."
+             });
+        } else {
+            // Αν είναι παλιό session (Zombie), το κλείνουμε αυτόματα
+            existingSession.logoutAt = new Date();
+            existingSession.notes = "Auto-closed by new login (Zombie session)"; // Προαιρετικό log
+            await existingSession.save();
+        }
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    // ✅ Normalization για το Token και το Response
     const userProject = user.project ? user.project.toLowerCase() : "other";
 
-    // Δημιουργία Token
+    // Δημιουργία Token (8 ώρες)
     const token = jwt.sign(
       { userId: user._id, role: userRole, project: userProject },
       process.env.JWT_SECRET,
-      { expiresIn: "8h" }
+      { expiresIn: "9h" }
     );
 
     const now = new Date();
     
-    // Καταγραφή στο LoginLog
+    // Καταγραφή νέου LoginLog
     await LoginLog.create({
       userId: user._id,
       username: user.username,
-      project: userProject, // Αποθηκεύουμε το normalized project
+      project: userProject,
       fullName: user.fullName,
       loginAt: now,
       lastSeen: now
@@ -124,15 +136,14 @@ exports.login = async (req, res) => {
       { upsert: true, new: true }
     );
 
-    // ✅ 3. Στέλνουμε πίσω καθαρά δεδομένα (Lowercase)
     res.json({
       token,
       user: {
         _id: user._id,
         username: user.username,
         email: user.email,
-        role: userRole,       // Σίγουρα μικρά (π.χ. "user", "admin")
-        project: userProject, // Σίγουρα μικρά (π.χ. "epic", "nova")
+        role: userRole,
+        project: userProject,
         fullName: user.fullName,
         company: user.company
       },
@@ -157,5 +168,22 @@ exports.logout = async (req, res) => {
   } catch (err) {
     console.error("Logout Error:", err);
     res.status(500).json({ error: err.message });
+  }
+};
+
+// Heartbeat: Ενημερώνει το lastSeen για να ξέρουμε ότι ο χρήστης είναι online
+exports.heartbeat = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    // Ενημερώνουμε μόνο το session που είναι ανοιχτό (χωρίς logoutAt)
+    await LoginLog.findOneAndUpdate(
+      { userId: userId, logoutAt: { $exists: false } },
+      { lastSeen: new Date() }
+    );
+    res.status(200).send("OK");
+  } catch (err) {
+    // Δεν χρειάζεται να σκάει με error στο frontend το heartbeat
+    console.error("Heartbeat error", err); 
+    res.status(200).send("OK");
   }
 };

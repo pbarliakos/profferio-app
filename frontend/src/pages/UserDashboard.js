@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react"; 
 import { 
   Box, 
   Typography, 
@@ -14,6 +14,7 @@ import {
   Email as EmailIcon, 
   Logout as LogoutIcon, 
   Dashboard as DashboardIcon,
+  Groups as GroupsIcon, 
   LightMode, 
   DarkMode 
 } from "@mui/icons-material";
@@ -24,7 +25,6 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
   const theme = useTheme();
   
-  // Διαβάζουμε τον χρήστη
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const handleLogout = async () => {
@@ -41,16 +41,25 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
     }
   };
 
-  // --- LOGIC ΓΙΑ ΤΑ TILES ---
   const projectLower = (user.project || "").toLowerCase().trim();
+  const userRole = (user.role || "").toLowerCase().trim();
   
-  // 1. Time Tracker: "Σε όλα τα roles θα εμφανίζει το timetracker"
-  // Οπότε το κάνουμε true για όλους όσους έχουν πρόσβαση σε αυτό το Dashboard.
   const showTimeTracker = true;
-
-  // 2. Nova FTTH: "Στο project nova θα εμφανιζει και το ftth email"
-  // Ελέγχουμε μόνο αν το project είναι "nova".
+  const showTeamMonitor = userRole === "team leader"; 
   const showNovaTool = projectLower.includes("nova");
+
+  // ✅ Κοινό στυλ για όλα τα Tiles για να είναι ΙΔΙΑ
+  const tileStyle = {
+    height: "100%", 
+    minHeight: "250px", // Σταθερό ελάχιστο ύψος
+    display: "flex", 
+    flexDirection: "column",
+    justifyContent: "center",
+    borderRadius: 4, 
+    transition: '0.3s', 
+    bgcolor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff',
+    '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 } 
+  };
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default", py: 4 }}>
@@ -66,7 +75,7 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
           
           <Box display="flex" alignItems="center" gap={2}>
             <Typography variant="subtitle1" sx={{ opacity: 0.7, display: { xs: 'none', sm: 'block' } }}>
-              {user.fullName} | <strong>{user.project}</strong>
+              {user.fullName} | <strong>{user.project}</strong> | {user.role}
             </Typography>
 
             <Button 
@@ -89,23 +98,15 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
         </Box>
 
         {/* TILES GRID */}
-        <Grid container spacing={4} justifyContent="center">
+        <Grid container spacing={4} justifyContent="center" alignItems="stretch">
           
-          {/* TILE 1: TIME TRACKER (Πλέον ανοιχτό για όλους) */}
+          {/* TILE 1: TIME TRACKER */}
           {showTimeTracker && (
-            <Grid item xs={12} sm={6} md={4}>
-              <Card 
-                sx={{ 
-                  height: '100%', 
-                  borderRadius: 4, 
-                  transition: '0.3s', 
-                  bgcolor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff',
-                  '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 } 
-                }}
-              >
+            <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex' }}>
+              <Card sx={{ width: '100%', ...tileStyle }}>
                 <CardActionArea 
                   onClick={() => window.open("/my-time", "_blank")}
-                  sx={{ height: '100%', p: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
+                  sx={{ height: '100%', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
                 >
                   <AccessTimeIcon sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
                   <Typography variant="h5" fontWeight="bold" gutterBottom>
@@ -119,21 +120,33 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
             </Grid>
           )}
 
-          {/* TILE 2: NOVA FTTH (Μόνο για Nova Project) */}
+          {/* TILE 2: TEAM MONITOR */}
+          {showTeamMonitor && (
+            <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex' }}>
+              <Card sx={{ width: '100%', ...tileStyle }}>
+                <CardActionArea 
+                  onClick={() => navigate("/team-monitor")}
+                  sx={{ height: '100%', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
+                >
+                  <GroupsIcon sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
+                  <Typography variant="h5" fontWeight="bold" gutterBottom>
+                    Team Monitor
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Live εικόνα της ομάδας ({user.project}).
+                  </Typography>
+                </CardActionArea>
+              </Card>
+            </Grid>
+          )}
+
+          {/* TILE 3: NOVA FTTH */}
           {showNovaTool && (
-            <Grid item xs={12} sm={6} md={4}>
-              <Card 
-                sx={{ 
-                  height: '100%', 
-                  borderRadius: 4, 
-                  transition: '0.3s', 
-                  bgcolor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff',
-                  '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 } 
-                }}
-              >
+            <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex' }}>
+              <Card sx={{ width: '100%', ...tileStyle }}>
                 <CardActionArea 
                   onClick={() => navigate("/nova")}
-                  sx={{ height: '100%', p: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
+                  sx={{ height: '100%', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
                 >
                   <EmailIcon sx={{ fontSize: 80, color: '#9c27b0', mb: 2 }} />
                   <Typography variant="h5" fontWeight="bold" gutterBottom>
