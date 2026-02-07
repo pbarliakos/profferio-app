@@ -68,25 +68,39 @@ exports.login = async (req, res) => {
 
     const userRole = user.role ? user.role.toLowerCase() : "user";
     
-    // Αν υπάρχει ανοιχτό session και ο χρήστης ΔΕΝ είναι admin
-    if (existingSession && userRole !== "admin") {
-        
-        // Υπολογισμός: Πόση ώρα έχει περάσει από το lastSeen (σε λεπτά);
-        const lastSeenTime = new Date(existingSession.lastSeen).getTime();
-        const currentTime = new Date().getTime();
-        const diffMinutes = (currentTime - lastSeenTime) / (1000 * 60);
+// 🔴 ΕΔΩ ΟΡΙΖΕΙΣ ΤΟ ΟΡΙΟ:
+    const MAX_SESSIONS = 5; // Βάλε 2 αν θες PC + Κινητό, ή 1 για αυστηρό
 
-        // 🛑 ΑΛΛΑΓΗ ΕΔΩ: Αν είναι ενεργός τα τελευταία 5 λεπτά, τότε μόνο τον μπλοκάρουμε.
-        // Αν έχει περάσει 5λεπτο, θεωρούμε ότι το προηγούμενο tab "πέθανε" και τον αφήνουμε να μπει.
-        if (diffMinutes < 2) {
+    if (userRole !== "admin") {
+        // 1. Βρίσκουμε ΟΛΑ τα ανοιχτά sessions του χρήστη
+        const activeSessions = await LoginLog.find({
+            userId: user._id,
+            logoutAt: { $exists: false }
+        });
+
+        let validSessionsCount = 0;
+        const nowMs = new Date().getTime();
+
+        for (let session of activeSessions) {
+            const lastSeenTime = new Date(session.lastSeen).getTime();
+            const diffMinutes = (nowMs - lastSeenTime) / (1000 * 60);
+
+            // 2. Έλεγχος Zombie: Αν είναι ανενεργό πάνω από 2 λεπτά, το κλείνουμε αυτόματα
+            if (diffMinutes >= 2) {
+                session.logoutAt = new Date();
+                session.notes = "Auto-closed by new login (Zombie session)";
+                await session.save();
+            } else {
+                // Είναι ενεργό session, το μετράμε
+                validSessionsCount++;
+            }
+        }
+
+        // 3. Έλεγχος Ορίου
+        if (validSessionsCount >= MAX_SESSIONS) {
              return res.status(403).json({
-                message: "Υπάρχει ήδη ενεργή συνεδρία σε άλλη συσκευή/tab."
+                message: `Έχετε φτάσει το όριο των ${MAX_SESSIONS} ενεργών συνεδριών. Παρακαλώ αποσυνδεθείτε από άλλη συσκευή.`
              });
-        } else {
-            // Αν είναι παλιό session (Zombie), το κλείνουμε αυτόματα
-            existingSession.logoutAt = new Date();
-            existingSession.notes = "Auto-closed by new login (Zombie session)"; // Προαιρετικό log
-            await existingSession.save();
         }
     }
 

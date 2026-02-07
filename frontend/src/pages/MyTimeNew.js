@@ -135,6 +135,26 @@ const MyTimeNew = ({ darkMode, setDarkMode }) => {
     }
   };
 
+  // --- ΝΕΟ EFFECT: Background Sync ---
+  // Ρωτάει τον server κάθε 3 δευτερόλεπτα για αλλαγές από άλλες συσκευές
+  useEffect(() => {
+    const syncInterval = setInterval(async () => {
+       try {
+         // Προσοχή: Δεν θέλουμε να ενεργοποιούμε το loading spinner εδώ
+         // γιατί θα αναβοσβήνει η σελίδα. Κάνουμε "σιωπηλό" fetch.
+         const res = await axios.get("/api/time/today");
+         
+         // Ενημερώνουμε το state ΜΟΝΟ αν πάρουμε απάντηση
+         // Το calculateTimes θα τρέξει αυτόματα επειδή εξαρτάται από το serverData
+         setServerData(res.data);
+       } catch (err) {
+         console.error("Background sync failed", err);
+       }
+    }, 3000); // Κάθε 3 δευτερόλεπτα
+
+    return () => clearInterval(syncInterval);
+  }, []);
+
   // ✅ LOGIC: Back to Dashboard based on Role
   const handleBackClick = () => {
     const role = localStorage.getItem("role");
@@ -154,6 +174,9 @@ const MyTimeNew = ({ darkMode, setDarkMode }) => {
   }
 
   const status = serverData?.status || "CLOSED";
+
+
+  
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default", pb: 4 }}>

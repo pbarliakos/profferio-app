@@ -5,15 +5,15 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const startCronJobs = () => {
-  // Ορίζουμε το URL του API (localhost γιατί τρέχει στον ίδιο server)
-  // Αν έχεις αλλάξει την πόρτα, βεβαιώσου ότι το PORT είναι σωστό
+  // Define the API URL (localhost since it runs on the same server)
+  // Ensure the PORT matches your server configuration
   const PORT = process.env.PORT || 5000;
   const API_URL = `http://localhost:${PORT}/api/auth`;
 
   console.log("⏳ Cron Jobs initialized...");
 
   // ✅ JOB 1: MIDNIGHT KILL SWITCH (23:59:00)
-  // Τρέχει κάθε μέρα στις 23:59 ακριβώς
+  // Runs every day exactly at 23:59
   cron.schedule("59 23 * * *", async () => {
     console.log("🕛 Triggering Midnight Force Close (Non-Admins)...");
     try {
@@ -23,11 +23,11 @@ const startCronJobs = () => {
       console.error("❌ Midnight Cron Failed:", err.message);
     }
   }, {
-    timezone: "Europe/Athens" // Σιγουρέψου ότι τρέχει σε ώρα Ελλάδας
+    timezone: "Europe/Athens" // Ensures it runs in Greek time
   });
 
-  // ✅ JOB 2: (Προαιρετικό) AUTO CLOSE PAST DAYS (00:05:00)
-  // Καθαρίζει τυχόν υπολείμματα από προηγούμενες μέρες που ίσως ξέφυγαν
+  // ✅ JOB 2: (Optional) AUTO CLOSE PAST DAYS (00:05:00)
+  // Cleans up any remnants from previous days that might have been missed
   cron.schedule("5 0 * * *", async () => {
     console.log("🧹 Triggering Past Days Cleanup...");
     try {

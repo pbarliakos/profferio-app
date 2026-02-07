@@ -22,6 +22,7 @@ import TeamMonitor from "./pages/TeamMonitor";
 
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
+import GlobalTimer from "./components/GlobalTimer";
 
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
@@ -107,42 +108,42 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
-        <Routes>
-          <Route path="/" element={<Login darkMode={darkMode} setDarkMode={setDarkMode} />} />
+        <GlobalTimer />
+          <Routes>
+            <Route path="/" element={<Login darkMode={darkMode} setDarkMode={setDarkMode} />} />
 
-          {/* 🛡️ Admin Protected Routes */}
-          <Route element={<ProtectedRoute allowedRole="admin" />}>
-            <Route path="/admin" element={<AdminDashboard darkMode={darkMode} setDarkMode={setDarkMode} />} />
-            <Route path="/admin/timelogs" element={<AdminTimeLogs darkMode={darkMode} setDarkMode={setDarkMode} />} />
-            <Route path="/admin/loginlogs" element={<LoginLogs darkMode={darkMode} />} />
-            <Route path="/admin/AgentMonitor" element={<AgentMonitor darkMode={darkMode} />} />
-          </Route>
+            {/* 🛡️ Admin Protected Routes */}
+            <Route element={<ProtectedRoute allowedRole="admin" />}>
+              <Route path="/admin" element={<AdminDashboard darkMode={darkMode} setDarkMode={setDarkMode} />} />
+              <Route path="/admin/timelogs" element={<AdminTimeLogs darkMode={darkMode} setDarkMode={setDarkMode} />} />
+              <Route path="/admin/loginlogs" element={<LoginLogs darkMode={darkMode} />} />
+              <Route path="/admin/AgentMonitor" element={<AgentMonitor darkMode={darkMode} />} />
+            </Route>
 
-          {/* 🛡️ User Dashboard */}
-          <Route element={<ProtectedRoute />}>
-             <Route path="/dashboard" element={<UserDashboard darkMode={darkMode} setDarkMode={setDarkMode} />} />
-          </Route>
+            {/* 🛡️ User Dashboard */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<UserDashboard darkMode={darkMode} setDarkMode={setDarkMode} />} />
+            </Route>
 
-          {/* 🛡️ Tools */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/my-time" element={<MyTimeNew darkMode={darkMode} setDarkMode={setDarkMode} />} />
-            <Route path="/team-monitor" element={<TeamMonitor darkMode={darkMode} setDarkMode={setDarkMode} />} />
-            <Route path="/nova/sales-tools" element={<SalesTools darkMode={darkMode} setDarkMode={setDarkMode} />} />
-          </Route>
+            {/* 🛡️ Tools */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/my-time" element={<MyTimeNew darkMode={darkMode} setDarkMode={setDarkMode} />} />
+              <Route path="/team-monitor" element={<TeamMonitor darkMode={darkMode} setDarkMode={setDarkMode} />} />
+              <Route path="/nova/sales-tools" element={<SalesTools darkMode={darkMode} setDarkMode={setDarkMode} />} />
+            </Route>
 
-          <Route element={<ProtectedRoute allowedProject="alterlife" />}>
-            <Route path="/alterlife" element={<Alterlife />} />
-          </Route>
+            <Route element={<ProtectedRoute allowedProject="alterlife" />}>
+              <Route path="/alterlife" element={<Alterlife />} />
+            </Route>
 
-          <Route element={<ProtectedRoute allowedProject="nova" />}>
-            <Route path="/nova" element={<Nova />} />
-          </Route>
+            <Route element={<ProtectedRoute allowedProject="nova" />}>
+              <Route path="/nova" element={<Nova />} />
+            </Route>
 
-          <Route element={<ProtectedRoute allowedProject="other" />}>
-            <Route path="/other" element={<Other />} />
-          </Route>
-
-        </Routes>
+            <Route element={<ProtectedRoute allowedProject="other" />}>
+              <Route path="/other" element={<Other />} />
+            </Route>
+          </Routes>
       </Router>
     </ThemeProvider>
   );

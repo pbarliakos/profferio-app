@@ -106,7 +106,7 @@ router.post("/logout-beacon", async (req, res) => {
     }
 
     // Κλείνουμε και τη μέρα για ασφάλεια
-    await forceCloseDay(userId);
+    //await forceCloseDay(userId);
 
     res.json({ message: "Beacon logout processed" });
   } catch (err) {
@@ -157,7 +157,7 @@ router.post("/force-close-inactive-sessions", async (req, res) => {
       await log.save();
       
       // Κλείνουμε και τη μέρα του συγκεκριμένου χρήστη
-      await forceCloseDay(log.userId);
+      //await forceCloseDay(log.userId);
       closedCount++;
     }
     res.json({ message: `Force-closed ${closedCount} sessions.` });
