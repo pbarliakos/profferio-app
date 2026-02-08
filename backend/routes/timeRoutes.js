@@ -3,13 +3,12 @@ const router = express.Router();
 const timeController = require("../controllers/timeController");
 const { protect, isAdmin } = require("../middleware/authMiddleware");
 
-// ✅ Χρειαζόμαστε τα Models εδώ για το custom φιλτράρισμα του Team Leader
+// ✅ Models
 const TimeDaily = require("../models/TimeDaily");
 const User = require("../models/User");
 
-// Debugging για σιγουριά
 if (!protect || !isAdmin) {
-    console.error("❌ CRITICAL ERROR: Auth middlewares are missing. Check middleware/authMiddleware.js");
+    console.error("❌ CRITICAL ERROR: Auth middlewares are missing.");
 }
 
 // ================= USER ROUTES =================
@@ -18,43 +17,71 @@ router.post("/action", protect, timeController.handleAction);
 router.get("/history", protect, timeController.getHistory);
 router.get('/team-monitor', protect, timeController.getTeamMonitor);
 
-// ================= TEAM LEADER ROUTE (NEW) =================
-// ✅ Επιστρέφει τα logs μόνο για το Project του Team Leader
+// ================= TEAM LEADER ROUTES =================
+
+// ✅ 1. Get Team Users (Για το Dropdown)
+router.get("/team/users", protect, async (req, res) => {
+    try {
+        if (req.user.role !== "admin" && req.user.role !== "team leader") {
+            return res.status(403).json({ message: "Not authorized" });
+        }
+
+        let query = {};
+        // Αν είναι Team Leader, φέρνουμε μόνο τους χρήστες του ίδιου Project
+        if (req.user.role === "team leader") {
+            query.project = req.user.project;
+        }
+
+        const users = await User.find(query).select("_id fullName username project").sort({ fullName: 1 });
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ✅ 2. Get Team History (Με φίλτρα Date & Users)
 router.get("/team/history", protect, async (req, res) => {
   try {
-    // 1. Έλεγχος Δικαιωμάτων (Admin ή Team Leader)
     if (req.user.role !== "admin" && req.user.role !== "team leader") {
         return res.status(403).json({ message: "Not authorized" });
     }
 
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate, userIds } = req.query; // userIds: "id1,id2" ή "all"
     let query = {};
 
-    // 2. Φίλτρο Ημερομηνίας
+    // Φίλτρο Ημερομηνίας
     if (startDate || endDate) {
        query.dateKey = {};
        if (startDate) query.dateKey.$gte = startDate;
        if (endDate) query.dateKey.$lte = endDate;
     }
 
-    // 3. ΛΟΓΙΚΗ ΓΙΑ TEAM LEADER: Φιλτράρισμα βάσει Project
+    // Φίλτρο Χρηστών
     if (req.user.role === "team leader") {
-        const myProject = req.user.project; // π.χ. "epic"
-
-        // Βρίσκουμε όλους τους χρήστες που ανήκουν στο ίδιο project
-        const projectUsers = await User.find({ project: myProject }).select('_id');
+        // Βεβαιωνόμαστε ότι ψάχνει μόνο στο project του
+        const myProject = req.user.project;
         
-        // Παίρνουμε τα IDs τους σε έναν πίνακα
-        const projectUserIds = projectUsers.map(u => u._id);
-
-        // Προσθέτουμε στο query: Φέρε logs ΜΟΝΟ αν το userId είναι στη λίστα της ομάδας μου
-        query.userId = { $in: projectUserIds };
+        // Αν έχει επιλέξει συγκεκριμένους χρήστες
+        if (userIds && userIds !== "all") {
+            const selectedIds = userIds.split(",");
+            query.userId = { $in: selectedIds };
+        } else {
+            // Αν είναι "all", φέρνουμε όλους του project
+            const projectUsers = await User.find({ project: myProject }).select('_id');
+            const projectUserIds = projectUsers.map(u => u._id);
+            query.userId = { $in: projectUserIds };
+        }
+    } else if (req.user.role === "admin") {
+        // Ο Admin μπορεί να ψάξει όποιον θέλει
+        if (userIds && userIds !== "all") {
+            const selectedIds = userIds.split(",");
+            query.userId = { $in: selectedIds };
+        }
     }
 
-    // 4. Εκτέλεση Query
     const logs = await TimeDaily.find(query)
-      .populate("userId", "username role project fullName") // Φέρνουμε τα στοιχεία του χρήστη
-      .sort({ dateKey: -1 }); // Τα πιο πρόσφατα πρώτα
+      .populate("userId", "username role project fullName") 
+      .sort({ dateKey: -1 });
 
     res.json(logs);
 

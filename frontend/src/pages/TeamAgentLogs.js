@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { 
   Box, Typography, Button, Stack, Paper, 
-  IconButton, Tooltip, Grid, Chip
+  IconButton, Tooltip, Grid, Chip, FormControl, InputLabel, Select, MenuItem, Checkbox, ListItemText, OutlinedInput
 } from "@mui/material";
 import { 
   DarkMode, LightMode, Logout, ArrowBack, FileDownload, FilterList
@@ -26,55 +26,83 @@ const msToHHMMSS = (ms) => {
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 };
 
+// Menu Props για το Dropdown (Στυλ όπως στο AdminTimeLogs)
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: { maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP, width: 400 }, // Πλάτος 400px όπως ζήτησες
+  },
+};
+
 const TeamAgentLogs = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
   const [logs, setLogs] = useState([]);
+  const [users, setUsers] = useState([]); // Λίστα χρηστών για το Dropdown
   const [loading, setLoading] = useState(true);
   
   // Filters
   const [startDate, setStartDate] = useState(null); 
   const [endDate, setEndDate] = useState(null);     
+  const [selectedUsers, setSelectedUsers] = useState([]); // Επιλεγμένοι χρήστες
   
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const handleLogout = async () => {
-    try {
-        await axios.post("/api/auth/logout");
-    } catch (err) { console.error(err); } 
-    finally {
-        localStorage.clear();
-        navigate("/");
-    }
+    try { await axios.post("/api/auth/logout"); } 
+    catch (err) { console.error(err); } 
+    finally { localStorage.clear(); navigate("/"); }
   };
 
+  // 1. Fetch Users
+  const fetchUsers = async () => {
+      try {
+          const res = await axios.get("/api/time/team/users");
+          setUsers(res.data || []);
+      } catch (err) { console.error(err); }
+  };
+
+  // 2. Fetch Logs
   const fetchLogs = useCallback(async () => {
     setLoading(true);
     try {
-      // Το dateKey στη βάση είναι string "YYYY-MM-DD"
       const startStr = startDate ? dayjs(startDate).format("YYYY-MM-DD") : "";
       const endStr = endDate ? dayjs(endDate).format("YYYY-MM-DD") : "";
+      
+      const uParam = selectedUsers.length === 0 ? "all" : selectedUsers.join(",");
 
       const query = new URLSearchParams({
           startDate: startStr,
-          endDate: endStr
+          endDate: endStr,
+          userIds: uParam
       }).toString();
 
-      // ✅ ΚΑΛΟΥΜΕ ΤΟ ΝΕΟ ROUTE ΓΙΑ TIMEDAILIES
       const res = await axios.get(`/api/time/team/history?${query}`);
       setLogs(res.data || []);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
-  }, [startDate, endDate]);
+  }, [startDate, endDate, selectedUsers]);
+
+  useEffect(() => {
+     fetchUsers();
+  }, []);
 
   useEffect(() => {
      fetchLogs();
   }, [fetchLogs]);
 
-  // ✅ EXPORT TO CSV (Τώρα με χρόνους εργασίας)
+  const handleUserChange = (event) => {
+    const { value } = event.target;
+    if (value.includes("everyone")) {
+        setSelectedUsers([]);
+    } else {
+        setSelectedUsers(typeof value === 'string' ? value.split(',') : value);
+    }
+  };
+
   const handleExportCSV = () => {
     if (logs.length === 0) return;
     const headers = ["Ημερομηνία", "Ονοματεπώνυμο", "Project", "Έναρξη", "Λήξη", "Εργασία", "Διάλειμμα", "Σύνολο", "Status"];
-    
     const rows = logs.map(log => [
       log.dateKey,
       log.userFullName || log.userId?.fullName || "-",
@@ -86,7 +114,6 @@ const TeamAgentLogs = ({ darkMode, setDarkMode }) => {
       msToHHMMSS((log.storedWorkMs || 0) + (log.storedBreakMs || 0)),
       log.status
     ]);
-
     const csvContent = [headers.join(";"), ...rows.map(r => r.join(";"))].join("\n");
     const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
@@ -98,13 +125,13 @@ const TeamAgentLogs = ({ darkMode, setDarkMode }) => {
   return (
     <Box p={4} sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
       
-      {/* HEADER */}
+      {/* ✅ HEADER: ΙΔΙΟ ΜΕ ΤΟ ADMIN PANEL */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Stack direction="row" spacing={2} alignItems="center">
           <Button startIcon={<ArrowBack />} onClick={() => navigate("/dashboard")} sx={{ fontWeight: 600 }}>
             DASHBOARD
           </Button>
-          <Typography variant="h4" fontWeight={800} color="text.primary">Team Logs (Time)</Typography>
+          <Typography variant="h4" fontWeight={800} color="text.primary">Team Logs</Typography>
         </Stack>
         <Stack direction="row" spacing={2} alignItems="center">
           <Typography variant="body2" sx={{ opacity: 0.8, color: 'text.secondary' }}>
@@ -121,7 +148,7 @@ const TeamAgentLogs = ({ darkMode, setDarkMode }) => {
         </Stack>
       </Box>
 
-      {/* FILTERS */}
+      {/* FILTERS PANEL */}
       <Paper sx={{ p: 3, mb: 4, borderRadius: 2 }}>
         <Box display="flex" alignItems="center" gap={1} mb={2}>
             <FilterList color="action" />
@@ -129,7 +156,9 @@ const TeamAgentLogs = ({ darkMode, setDarkMode }) => {
         </Box>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="el">
           <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={4}>
+              
+              {/* DATE FILTERS */}
+              <Grid item xs={12} sm={6} md={3}>
                   <DatePicker 
                     label="Από" 
                     value={startDate} 
@@ -138,7 +167,7 @@ const TeamAgentLogs = ({ darkMode, setDarkMode }) => {
                     slotProps={{ textField: { size: 'small', fullWidth: true } }}
                   />
               </Grid>
-              <Grid item xs={12} sm={4}>
+              <Grid item xs={12} sm={6} md={3}>
                   <DatePicker 
                     label="Έως" 
                     value={endDate} 
@@ -147,7 +176,40 @@ const TeamAgentLogs = ({ darkMode, setDarkMode }) => {
                     slotProps={{ textField: { size: 'small', fullWidth: true } }}
                   />
               </Grid>
-              <Grid item xs={12} sm={4} display="flex" justifyContent="flex-end">
+
+              {/* ✅ USER FILTER: ΑΚΡΙΒΩΣ ΟΠΩΣ ΣΤΟ ADMIN */}
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth size="small">
+                  <InputLabel shrink id="users-label">Χρήστες</InputLabel>
+                  <Select
+                    labelId="users-label"
+                    multiple
+                    displayEmpty
+                    value={selectedUsers}
+                    onChange={handleUserChange}
+                    input={<OutlinedInput label="Χρήστες" />}
+                    MenuProps={MenuProps}
+                    renderValue={(selected) => {
+                        if (selected.length === 0) return "Όλοι";
+                        const selectedNames = users.filter(u => selected.includes(u._id)).map(u => u.fullName);
+                        return selectedNames.join(", ");
+                    }}
+                  >
+                    <MenuItem value="everyone">
+                      <ListItemText primary="-- Όλοι --" sx={{ color: 'primary.main', fontWeight: 'bold' }} />
+                    </MenuItem>
+                    {users.map((u) => (
+                      <MenuItem key={u._id} value={u._id}>
+                        <Checkbox checked={selectedUsers.indexOf(u._id) > -1} />
+                        <ListItemText primary={u.fullName} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* EXPORT BUTTON */}
+              <Grid item xs={12} sm={6} md={3} display="flex" justifyContent="flex-end">
                    <Button 
                         variant="contained" 
                         color="success" 
@@ -163,7 +225,7 @@ const TeamAgentLogs = ({ darkMode, setDarkMode }) => {
         </LocalizationProvider>
       </Paper>
 
-      {/* DATA GRID - Τώρα δείχνει τα timedailies */}
+      {/* DATA GRID */}
       <Box sx={{ height: 650, width: '100%' }}>
         <DataGrid 
           rows={logs} 
@@ -232,14 +294,8 @@ const TeamAgentLogs = ({ darkMode, setDarkMode }) => {
           ]} 
           sx={{
               bgcolor: 'background.paper',
-              '& .MuiDataGrid-columnHeaders': {
-                  bgcolor: 'primary.main',
-                  color: 'white',
-                  fontWeight: 'bold'
-              },
-              '& .MuiDataGrid-columnHeaderTitle': {
-                  fontWeight: 'bold'
-              }
+              '& .MuiDataGrid-columnHeaders': { bgcolor: 'primary.main', color: 'white', fontWeight: 'bold' },
+              '& .MuiDataGrid-columnHeaderTitle': { fontWeight: 'bold' }
           }}
         />
       </Box>
