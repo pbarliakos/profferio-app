@@ -9,7 +9,7 @@ import Alterlife from "./pages/Alterlife";
 import Other from "./pages/Other";
 import AdminDashboard from "./pages/AdminDashboard";
 import Nova from "./pages/Nova";
-//import MyTime from "./pages/MyTime"; 
+import TeamAgentLogs from "./pages/TeamAgentLogs";
 import MyTimeNew from "./pages/MyTimeNew";
 import UserDashboard from "./pages/UserDashboard";
 import SalesTools from "./pages/SalesTools";
@@ -130,6 +130,7 @@ function App() {
               <Route path="/my-time" element={<MyTimeNew darkMode={darkMode} setDarkMode={setDarkMode} />} />
               <Route path="/team-monitor" element={<TeamMonitor darkMode={darkMode} setDarkMode={setDarkMode} />} />
               <Route path="/nova/sales-tools" element={<SalesTools darkMode={darkMode} setDarkMode={setDarkMode} />} />
+              <Route path="/team-logs" element={<TeamAgentLogs darkMode={darkMode} setDarkMode={setDarkMode} />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedProject="alterlife" />}>

@@ -14,7 +14,8 @@ import {
   Email as EmailIcon, 
   Logout as LogoutIcon, 
   Dashboard as DashboardIcon,
-  Groups as GroupsIcon, 
+  Groups as GroupsIcon,
+   HistoryEdu as LogsIcon, 
   LightMode, 
   DarkMode,
   Handyman as HandymanIcon // ✅ ΤΟ ΝΕΟ ΕΙΚΟΝΙΔΙΟ ΓΙΑ ΤΑ TOOLS
@@ -48,6 +49,7 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
   const showTimeTracker = true;
   const showTeamMonitor = userRole === "team leader"; 
   const showNovaTool = projectLower.includes("nova");
+  const showAgentLogs = userRole === "team leader";
   
   // ✅ LOGIC: Εμφάνιση Sales Tools αν project=nova Ή role=backoffice
   const showSalesTools = projectLower === "nova" || userRole === "backoffice";
@@ -180,6 +182,27 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Links, Files & Contacts
+                  </Typography>
+                </CardActionArea>
+              </Card>
+            </Grid>
+          )}
+
+          {/* ✅ TILE: AGENT LOGS (MONO TEAM LEADERS) */}
+          {showAgentLogs && (
+            <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex' }}>
+              <Card sx={{ width: '100%', ...tileStyle }}>
+                <CardActionArea 
+                  onClick={() => navigate("/team-logs")}
+                  sx={{ height: '100%', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
+                >
+                  <LogsIcon sx={{ fontSize: 80, color: '#ff9800', mb: 2 }} /> {/* Πορτοκαλί χρώμα */}
+                  
+                  <Typography variant="h5" fontWeight="bold" gutterBottom>
+                    Agent Logs
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Ιστορικό συνδέσεων και export δεδομένων.
                   </Typography>
                 </CardActionArea>
               </Card>
