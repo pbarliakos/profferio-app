@@ -15,10 +15,12 @@ import {
   Logout as LogoutIcon, 
   Dashboard as DashboardIcon,
   Groups as GroupsIcon,
-   HistoryEdu as LogsIcon, 
+  HistoryEdu as LogsIcon, 
   LightMode, 
   DarkMode,
-  Handyman as HandymanIcon // ✅ ΤΟ ΝΕΟ ΕΙΚΟΝΙΔΙΟ ΓΙΑ ΤΑ TOOLS
+  Handyman as HandymanIcon,
+  Security as SecurityIcon, // ✅ Για το Reset Password
+  Assistant as AssistantIcon // ✅ Για το Copilot
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -54,7 +56,7 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
   // ✅ LOGIC: Εμφάνιση Sales Tools αν project=nova Ή role=backoffice
   const showSalesTools = projectLower === "nova" || userRole === "backoffice";
 
-  // ✅ Κοινό στυλ για όλα τα Tiles για να είναι ΙΔΙΑ
+  // ✅ Κοινό στυλ για όλα τα Tiles
   const tileStyle = {
     height: "100%", 
     minHeight: "250px", // Σταθερό ελάχιστο ύψος
@@ -166,7 +168,7 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
             </Grid>
           )}
 
-          {/* ✅ TILE 4: SALES TOOLS (ΝΕΟ ICON) */}
+          {/* TILE 4: SALES TOOLS */}
           {showSalesTools && (
             <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex' }}>
               <Card sx={{ width: '100%', ...tileStyle }}>
@@ -174,9 +176,7 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
                   onClick={() => navigate("/nova/sales-tools")}
                   sx={{ height: '100%', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
                 >
-                  {/* ΕΔΩ ΑΛΛΑΞΕ Η ΕΙΚΟΝΑ ΣΕ ΕΙΚΟΝΙΔΙΟ */}
                   <HandymanIcon sx={{ fontSize: 80, color: 'secondary.main', mb: 2 }} />
-                  
                   <Typography variant="h5" fontWeight="bold" gutterBottom>
                     Sales Tools
                   </Typography>
@@ -188,7 +188,7 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
             </Grid>
           )}
 
-          {/* ✅ TILE: AGENT LOGS (MONO TEAM LEADERS) */}
+          {/* TILE 5: AGENT LOGS (MONO TEAM LEADERS) */}
           {showAgentLogs && (
             <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex' }}>
               <Card sx={{ width: '100%', ...tileStyle }}>
@@ -196,8 +196,7 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
                   onClick={() => navigate("/team-logs")}
                   sx={{ height: '100%', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
                 >
-                  <LogsIcon sx={{ fontSize: 80, color: '#ff9800', mb: 2 }} /> {/* Πορτοκαλί χρώμα */}
-                  
+                  <LogsIcon sx={{ fontSize: 80, color: '#ff9800', mb: 2 }} />
                   <Typography variant="h5" fontWeight="bold" gutterBottom>
                     Agent Logs
                   </Typography>
@@ -208,6 +207,46 @@ const UserDashboard = ({ darkMode, setDarkMode }) => {
               </Card>
             </Grid>
           )}
+
+          {/* ✅ ΝΕΟ TILE: MICROSOFT RESET PASSWORD (ΓΙΑ ΟΛΟΥΣ) */}
+          <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex' }}>
+            <Card sx={{ width: '100%', ...tileStyle }}>
+              <CardActionArea 
+                href="https://passwordreset.microsoftonline.com/passwordreset#!/"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{ height: '100%', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
+              >
+                <SecurityIcon sx={{ fontSize: 80, color: 'warning.main', mb: 2 }} />
+                <Typography variant="h5" fontWeight="bold" gutterBottom>
+                  Password Reset
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Microsoft Reset Password (Every 2 months).
+                </Typography>
+              </CardActionArea>
+            </Card>
+          </Grid>
+
+          {/* ✅ ΝΕΟ TILE: MICROSOFT 365 COPILOT (ΓΙΑ ΟΛΟΥΣ) */}
+          <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex' }}>
+            <Card sx={{ width: '100%', ...tileStyle }}>
+              <CardActionArea 
+                href="https://m365.cloud.microsoft/chat/?auth=2&origindomain=Office"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{ height: '100%', p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}
+              >
+                <AssistantIcon sx={{ fontSize: 80, color: 'info.main', mb: 2 }} />
+                <Typography variant="h5" fontWeight="bold" gutterBottom>
+                  Microsoft Copilot
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Ο AI βοηθός της Microsoft (M365 Chat).
+                </Typography>
+              </CardActionArea>
+            </Card>
+          </Grid>
 
         </Grid>
       </Container>

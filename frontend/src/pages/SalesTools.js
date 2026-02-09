@@ -20,7 +20,10 @@ import {
   Logout as LogoutIcon,
   LightMode,
   DarkMode,
-  ArrowBackIosNew
+  ArrowBackIosNew,
+  Security, // Για το Password Reset
+  Assistant, // Για το Copilot
+  SupportAgent // Για το IT Service Desk
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -28,6 +31,9 @@ import axios from "axios";
 const SalesTools = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+  
+  // Έλεγχος αν είναι Team Leader ή Admin για να δείξουμε το IT Service Desk
+  const isTeamLeaderOrAdmin = user.role === "team leader" || user.role === "admin";
 
   const handleLogout = async () => {
     try {
@@ -40,9 +46,9 @@ const SalesTools = ({ darkMode, setDarkMode }) => {
     }
   };
 
-  const LinkItem = ({ title, url, icon = <LinkIcon fontSize="small" /> }) => (
+  const LinkItem = ({ title, url, icon = <LinkIcon fontSize="small" />, color = 'primary.main' }) => (
     <ListItem disablePadding sx={{ mb: 1.5 }}>
-      <ListItemIcon sx={{ minWidth: 35, color: 'primary.main' }}>{icon}</ListItemIcon>
+      <ListItemIcon sx={{ minWidth: 35, color: color }}>{icon}</ListItemIcon>
       <Link 
         href={url} 
         target="_blank" 
@@ -154,25 +160,51 @@ const SalesTools = ({ darkMode, setDarkMode }) => {
         </Paper>
 
 
-        {/* CONTENT GRID - Όλα xs={12} για full width */}
+        {/* CONTENT GRID */}
         <Grid container spacing={3} alignItems="stretch">
           
           {/* Portals & Services */}
-          {/* ✅ ΑΛΛΑΓΗ: Έγινε xs={12} (ήταν md={6}) */}
           <Grid item xs={12}>
             <Paper sx={paperStyle}>
               <Typography variant="h6" color="primary" fontWeight="bold" gutterBottom>Portals & Services</Typography>
               <Divider sx={{ mb: 2 }} />
               <List>
-                <LinkItem title="Online Service Desk" url="https://othisi.atlassian.net/servicedesk/customer/portal/8" />
-                <LinkItem title="CRM Service Desk" url="https://othisi.atlassian.net/servicedesk/customer/portal/15" />
-                <LinkItem title="NOVA BUSINESS - Jira Service Management" url="#" /> 
+                <LinkItem title="JIRA αίτηση για το Online" url="https://othisi.atlassian.net/servicedesk/customer/portal/8" />
+                <LinkItem title="JIRA αίτηση για το CRM" url="https://othisi.atlassian.net/servicedesk/customer/portal/15" />
+                <LinkItem title="JIRA αίτηση για το Business" url="#" />
+                
+                {/* ✅ ΝΕΑ LINKS MICROSOFT */}
+                <Divider sx={{ my: 1, opacity: 0.5 }} />
+                <LinkItem 
+                    title="Microsoft Reset Password (Every 2 months)" 
+                    url="https://passwordreset.microsoftonline.com/passwordreset#!/" 
+                    icon={<Security fontSize="small" />}
+                    color="warning.main"
+                />
+                <LinkItem 
+                    title="Microsoft 365 Copilot" 
+                    url="https://m365.cloud.microsoft/chat/?auth=2&origindomain=Office" 
+                    icon={<Assistant fontSize="small" />}
+                    color="info.main"
+                />
+
+                {/* ✅ IT SERVICE DESK (Μόνο για Team Leaders & Admins) */}
+                {isTeamLeaderOrAdmin && (
+                    <>
+                        <Divider sx={{ my: 1, opacity: 0.5 }} />
+                        <LinkItem 
+                            title="IT Service Desk (Helpdesk)" 
+                            url="https://helpdesk.othisisa.gr/" 
+                            icon={<SupportAgent fontSize="small" />}
+                            color="success.main"
+                        />
+                    </>
+                )}
               </List>
             </Paper>
           </Grid>
 
           {/* SharePoint Lists */}
-          {/* ✅ ΑΛΛΑΓΗ: Έγινε xs={12} */}
           <Grid item xs={12}>
             <Paper sx={paperStyle}>
               <Typography variant="h6" color="error" fontWeight="bold" gutterBottom>Εκκρεμότητες (SharePoint)</Typography>
@@ -180,12 +212,12 @@ const SalesTools = ({ darkMode, setDarkMode }) => {
               <List>
                 <LinkItem 
                   title="Rejected List (Excel)" 
-                  url="https://othisisa-my.sharepoint.com/:x:/r/personal/pvlachakis_othisisa_gr/Documents/%CE%95%CE%9A%CE%9A%CE%A1%CE%95%CE%9C%CE%9F%CE%A4%CE%97%CE%A4%CE%95%CE%A3%20NOVA/%CE%A6%CE%95%CE%92%CE%A1%CE%99%CE%9F%CE%A5%CE%91%CE%A1%CE%99%CE%9F%CE%A3%202025/E%CE%9A%CE%9A%CE%A1%CE%95%CE%9C%CE%9F%CE%A4%CE%97%CE%A4%CE%95%CE%A3%20REJECTED.xlsx?d=wd09ea03368a9489788815dd2364d7eca&csf=1&web=1&e=xSlcb0" 
+                  url="https://othisisa-my.sharepoint.com/:x:/r/personal/pvlachakis_othisisa_gr/Documents/%CE%95%CE%9A%CE%9A%CE%A1%CE%95%CE%9C%CE%9F%CE%A4%CE%97%CE%A4%CE%95%CE%A3%20NOVA/%CE%A6%CE%95%CE%92%CE%A1%CE%99%CE%9F%CE%A3%202025/E%CE%9A%CE%9A%CE%A1%CE%95%CE%9C%CE%9F%CE%A4%CE%97%CE%A4%CE%95%CE%A3%20REJECTED.xlsx?d=wd09ea03368a9489788815dd2364d7eca&csf=1&web=1&e=xSlcb0" 
                   icon={<Description color="error" />}
                 />
                 <LinkItem 
                   title="SIM Cards List (Excel)" 
-                  url="https://othisisa-my.sharepoint.com/:x:/r/personal/pvlachakis_othisisa_gr/Documents/%CE%95%CE%9A%CE%9A%CE%A1%CE%95%CE%9C%CE%9F%CE%A4%CE%97%CE%A4%CE%95%CE%A3%20NOVA/%CE%A6%CE%95%CE%92%CE%A1%CE%99%CE%9F%CE%A5%CE%91%CE%A1%CE%99%CE%9F%CE%A3%202025/E%CE%9A%CE%9A%CE%A1%CE%95%CE%9C%CE%9F%CE%A4%CE%97%CE%A4%CE%95%CE%A3%20KA%CE%A1%CE%A4%CE%A9%CE%9D%20SIM.xlsx?d=w4112c14168754705891c235f5262e4de&csf=1&web=1&e=6VDgW7" 
+                  url="https://othisisa-my.sharepoint.com/:x:/r/personal/pvlachakis_othisisa_gr/Documents/%CE%95%CE%9A%CE%9A%CE%A1%CE%95%CE%9C%CE%9F%CE%A4%CE%97%CE%A4%CE%95%CE%A3%20NOVA/%CE%A6%CE%95%CE%92%CE%A1%CE%99%CE%9F%CE%A3%202025/E%CE%9A%CE%9A%CE%A1%CE%95%CE%9C%CE%9F%CE%A4%CE%97%CE%A4%CE%95%CE%A3%20KA%CE%A1%CE%A4%CE%A9%CE%9D%20SIM.xlsx?d=w4112c14168754705891c235f5262e4de&csf=1&web=1&e=6VDgW7" 
                   icon={<Description color="primary" />}
                 />
               </List>
@@ -193,18 +225,18 @@ const SalesTools = ({ darkMode, setDarkMode }) => {
           </Grid>
 
           {/* Operational Tools */}
-          {/* ✅ ΑΛΛΑΓΗ: Έγινε xs={12} */}
           <Grid item xs={12}>
             <Paper sx={paperStyle}>
               <Typography variant="h6" color="primary" fontWeight="bold" gutterBottom>Operational Tools</Typography>
               <Divider sx={{ mb: 2 }} />
               <List>
                 <LinkItem title="CCM Dialer" url="https://wind.ccmdialer.gr/CCMClient/CCM/main.php" />
-                <LinkItem title="Verification Email (Gov.gr)" url="https://www.broadband-assist.gov.gr/" />
                 <LinkItem 
                     title="Matrix (SharePoint)" 
                     url="https://othisisa-my.sharepoint.com/:x:/g/personal/jduni_othisisa_gr/EbfPEgH5pU1PpE92p9rtnbUBcvRy-64PmJRg_WXykVt5MA?email=mspathari%40othisisa.gr&e=0rjSkX" 
                 />
+                <LinkItem title="Verification Email (Gov.gr)" url="https://www.broadband-assist.gov.gr/" />
+                
                  <LinkItem 
                     title="Ad-Hoc Activities" 
                     url="https://othisisa-my.sharepoint.com/:x:/g/personal/kampntel_othisisa_gr/ESfA9hAflHBHrciaonO2qGEB5DwaWEHCMJNiWQxtERINeg?e=1zndyp" 
@@ -214,7 +246,6 @@ const SalesTools = ({ darkMode, setDarkMode }) => {
           </Grid>
 
           {/* Files & Procedures */}
-          {/* ✅ ΑΛΛΑΓΗ: Έγινε xs={12} */}
           <Grid item xs={12}>
             <Paper sx={paperStyle}>
               <Typography variant="h6" color="primary" fontWeight="bold" gutterBottom>Files & Procedures</Typography>
@@ -239,7 +270,7 @@ const SalesTools = ({ darkMode, setDarkMode }) => {
             </Paper>
           </Grid>
 
-          {/* Meetings (Full Width) */}
+          {/* Meetings */}
           <Grid item xs={12}>
             <Paper sx={paperStyle}>
               <Typography variant="h6" color="secondary" fontWeight="bold" gutterBottom>Training Meeting Rooms</Typography>
@@ -252,7 +283,7 @@ const SalesTools = ({ darkMode, setDarkMode }) => {
                             variant="outlined" 
                             color="inherit"
                             startIcon={<VideoCall color="secondary" />} 
-                            href="#" // Πρόσθεσε τα σωστά links εδώ όταν τα έχεις πρόχειρα
+                            href="#" 
                             target="_blank"
                             sx={{ 
                                 justifyContent: 'flex-start', 
@@ -269,7 +300,7 @@ const SalesTools = ({ darkMode, setDarkMode }) => {
             </Paper>
           </Grid>
 
-          {/* Contacts (Full Width) */}
+          {/* Contacts */}
           <Grid item xs={12}>
             <Paper sx={{ 
                 ...paperStyle, 
