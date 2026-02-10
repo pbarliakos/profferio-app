@@ -19,7 +19,7 @@ import {
   LightMode, 
   DarkMode,
   Handyman as HandymanIcon,
-  Security as SecurityIcon, // ✅ Για το Reset Password
+  Security as SecurityIcon, // ✅ Για το Password Reset
   Assistant as AssistantIcon // ✅ Για το Copilot
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";

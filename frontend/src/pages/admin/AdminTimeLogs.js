@@ -30,7 +30,7 @@ const MenuProps = {
   PaperProps: {
     style: {
       maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 400, // Αυξήσαμε το πλάτος της λίστας για να χωράνε τα ονόματα
+      width: 400, 
     },
   },
 };
@@ -87,7 +87,6 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
       lastLogoutAt: ""
   });
 
-  const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const handleLogout = () => {
@@ -129,8 +128,8 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
   }, [startDate, endDate, selectedUsers, selectedRoles, selectedProjects, selectedCompanies]);
 
   useEffect(() => {
-     fetchActiveUsers();
-     fetchLogs();
+      fetchActiveUsers();
+      fetchLogs();
   }, [fetchLogs]);
 
   const handleExportCSV = () => {
@@ -235,7 +234,7 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="el">
           <Grid container spacing={2} alignItems="center">
               
-              {/* ✅ ΗΜΕΡΟΜΗΝΙΕΣ (Τώρα md=4 -> 33% πλάτος, πολύ μεγάλα) */}
+              {/* ΗΜΕΡΟΜΗΝΙΕΣ */}
               <Grid item xs={12} sm={6} md={4}>
                   <DatePicker 
                     label="Από" 
@@ -255,144 +254,134 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
                   />
               </Grid>
 
-              {/* ✅ USERS FILTER (md=4) */}
+              {/* USERS FILTER */}
               <Grid item xs={12} sm={6} md={4}>
-<FormControl fullWidth size="small">
-  <InputLabel shrink id="users-label">Χρήστες</InputLabel>
-
-  <Select
-    labelId="users-label"
-    multiple
-    displayEmpty
-    value={selectedUsers}
-    onChange={(e) => handleMultiSelectChange(e, setSelectedUsers)}
-    input={<OutlinedInput label="Χρήστες" />}
-    MenuProps={MenuProps}
-    renderValue={(selected) => {
-      if (selected.length === 0) return "Όλοι";
-      const names = users
-        .filter(u => selected.includes(u._id))
-        .map(u => u.fullName);
-
-      // (βλέπε Fix 2 παρακάτω για το καλύτερο UX)
-      return names.join(", ");
-    }}
-  >
-    <MenuItem value="everyone">
-      <ListItemText primary="-- Όλοι --" sx={{ color: 'primary.main', fontWeight: 'bold' }} />
-    </MenuItem>
-
-    {users.map((u) => (
-      <MenuItem key={u._id} value={u._id}>
-        <Checkbox checked={selectedUsers.indexOf(u._id) > -1} />
-        <ListItemText primary={u.fullName} />
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
+                <FormControl fullWidth size="small">
+                  <InputLabel shrink id="users-label">Χρήστες</InputLabel>
+                  <Select
+                    labelId="users-label"
+                    multiple
+                    displayEmpty
+                    value={selectedUsers}
+                    onChange={(e) => handleMultiSelectChange(e, setSelectedUsers)}
+                    input={<OutlinedInput label="Χρήστες" />}
+                    MenuProps={MenuProps}
+                    renderValue={(selected) => {
+                      if (selected.length === 0) return "Όλοι";
+                      const names = users
+                        .filter(u => selected.includes(u._id))
+                        .map(u => u.fullName);
+                      return names.join(", ");
+                    }}
+                  >
+                    <MenuItem value="everyone">
+                      <ListItemText primary="-- Όλοι --" sx={{ color: 'primary.main', fontWeight: 'bold' }} />
+                    </MenuItem>
+                    {users.map((u) => (
+                      <MenuItem key={u._id} value={u._id}>
+                        <Checkbox checked={selectedUsers.indexOf(u._id) > -1} />
+                        <ListItemText primary={u.fullName} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
 
-              {/* ✅ ROLES FILTER (md=4) */}
+              {/* ROLES FILTER */}
               <Grid item xs={12} sm={6} md={4}>
-<FormControl fullWidth size="small">
-  <InputLabel shrink id="roles-label">Ρόλοι</InputLabel>
-
-  <Select
-    labelId="roles-label"
-    multiple
-    displayEmpty
-    value={selectedRoles}
-    onChange={(e) => handleMultiSelectChange(e, setSelectedRoles)}
-    input={<OutlinedInput label="Ρόλοι" />}
-    MenuProps={MenuProps}
-    renderValue={(selected) => {
-      if (selected.length === 0) return "Όλοι";
-      return selected.join(", ");
-    }}
-  >
-    <MenuItem value="everyone">
-      <ListItemText primary="-- Όλοι --" sx={{ color: "primary.main", fontWeight: "bold" }} />
-    </MenuItem>
-
-    {ALL_ROLES.map((role) => (
-      <MenuItem key={role} value={role}>
-        <Checkbox checked={selectedRoles.indexOf(role) > -1} />
-        <ListItemText primary={role} />
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
+                <FormControl fullWidth size="small">
+                  <InputLabel shrink id="roles-label">Ρόλοι</InputLabel>
+                  <Select
+                    labelId="roles-label"
+                    multiple
+                    displayEmpty
+                    value={selectedRoles}
+                    onChange={(e) => handleMultiSelectChange(e, setSelectedRoles)}
+                    input={<OutlinedInput label="Ρόλοι" />}
+                    MenuProps={MenuProps}
+                    renderValue={(selected) => {
+                      if (selected.length === 0) return "Όλοι";
+                      return selected.join(", ");
+                    }}
+                  >
+                    <MenuItem value="everyone">
+                      <ListItemText primary="-- Όλοι --" sx={{ color: "primary.main", fontWeight: "bold" }} />
+                    </MenuItem>
+                    {ALL_ROLES.map((role) => (
+                      <MenuItem key={role} value={role}>
+                        <Checkbox checked={selectedRoles.indexOf(role) > -1} />
+                        <ListItemText primary={role} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
 
-              {/* ✅ PROJECTS FILTER (md=4) */}
+              {/* PROJECTS FILTER */}
               <Grid item xs={12} sm={6} md={4}>
-<FormControl fullWidth size="small">
-  <InputLabel shrink id="projects-label">Projects</InputLabel>
-
-  <Select
-    labelId="projects-label"
-    multiple
-    displayEmpty
-    value={selectedProjects}
-    onChange={(e) => handleMultiSelectChange(e, setSelectedProjects)}
-    input={<OutlinedInput label="Projects" />}
-    MenuProps={MenuProps}
-    renderValue={(selected) => {
-      if (selected.length === 0) return "Όλα";
-      return selected.join(", ");
-    }}
-  >
-    <MenuItem value="everyone">
-      <ListItemText primary="-- Όλα --" sx={{ color: "primary.main", fontWeight: "bold" }} />
-    </MenuItem>
-
-    {ALL_PROJECTS.map((proj) => (
-      <MenuItem key={proj} value={proj}>
-        <Checkbox checked={selectedProjects.indexOf(proj) > -1} />
-        <ListItemText primary={proj} />
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
+                <FormControl fullWidth size="small">
+                  <InputLabel shrink id="projects-label">Projects</InputLabel>
+                  <Select
+                    labelId="projects-label"
+                    multiple
+                    displayEmpty
+                    value={selectedProjects}
+                    onChange={(e) => handleMultiSelectChange(e, setSelectedProjects)}
+                    input={<OutlinedInput label="Projects" />}
+                    MenuProps={MenuProps}
+                    renderValue={(selected) => {
+                      if (selected.length === 0) return "Όλα";
+                      return selected.join(", ");
+                    }}
+                  >
+                    <MenuItem value="everyone">
+                      <ListItemText primary="-- Όλα --" sx={{ color: "primary.main", fontWeight: "bold" }} />
+                    </MenuItem>
+                    {ALL_PROJECTS.map((proj) => (
+                      <MenuItem key={proj} value={proj}>
+                        <Checkbox checked={selectedProjects.indexOf(proj) > -1} />
+                        <ListItemText primary={proj} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
 
-              {/* ✅ COMPANIES FILTER (md=4) */}
+              {/* COMPANIES FILTER */}
               <Grid item xs={12} sm={6} md={4}>
-<FormControl fullWidth size="small">
-  <InputLabel shrink id="companies-label">Εταιρείες</InputLabel>
-
-  <Select
-    labelId="companies-label"
-    multiple
-    displayEmpty
-    value={selectedCompanies}
-    onChange={(e) => handleMultiSelectChange(e, setSelectedCompanies)}
-    input={<OutlinedInput label="Εταιρείες" />}
-    MenuProps={MenuProps}
-    renderValue={(selected) => {
-      if (selected.length === 0) return "Όλες";
-      return selected.join(", ");
-    }}
-  >
-    <MenuItem value="everyone">
-      <ListItemText primary="-- Όλες --" sx={{ color: "primary.main", fontWeight: "bold" }} />
-    </MenuItem>
-
-    {ALL_COMPANIES.map((comp) => (
-      <MenuItem key={comp} value={comp}>
-        <Checkbox checked={selectedCompanies.indexOf(comp) > -1} />
-        <ListItemText primary={comp} />
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
+                <FormControl fullWidth size="small">
+                  <InputLabel shrink id="companies-label">Εταιρείες</InputLabel>
+                  <Select
+                    labelId="companies-label"
+                    multiple
+                    displayEmpty
+                    value={selectedCompanies}
+                    onChange={(e) => handleMultiSelectChange(e, setSelectedCompanies)}
+                    input={<OutlinedInput label="Εταιρείες" />}
+                    MenuProps={MenuProps}
+                    renderValue={(selected) => {
+                      if (selected.length === 0) return "Όλες";
+                      return selected.join(", ");
+                    }}
+                  >
+                    <MenuItem value="everyone">
+                      <ListItemText primary="-- Όλες --" sx={{ color: "primary.main", fontWeight: "bold" }} />
+                    </MenuItem>
+                    {ALL_COMPANIES.map((comp) => (
+                      <MenuItem key={comp} value={comp}>
+                        <Checkbox checked={selectedCompanies.indexOf(comp) > -1} />
+                        <ListItemText primary={comp} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
 
-              {/* ACTION BUTTONS (Κάτω δεξιά, όλο το πλάτος) */}
+              {/* ACTION BUTTONS */}
               <Grid item xs={12} display="flex" justifyContent="flex-end" sx={{ mt: 2 }}>
-                   <Button variant="contained" color="success" size="large" startIcon={<FileDownload />} onClick={handleExportCSV} disabled={logs.length === 0}>
-                      Export Excel
-                   </Button>
+                    <Button variant="contained" color="success" size="large" startIcon={<FileDownload />} onClick={handleExportCSV} disabled={logs.length === 0}>
+                       Export Excel
+                    </Button>
               </Grid>
           </Grid>
         </LocalizationProvider>
@@ -414,9 +403,30 @@ const AdminTimeLogs = ({ darkMode, setDarkMode }) => {
             { field: "project", headerName: "Project", width: 100, valueGetter: (params, row) => row?.userId?.project || "-" },
             { field: "firstLogin", headerName: "Έναρξη", width: 90, renderCell: (p) => p.row.firstLoginAt ? dayjs(p.row.firstLoginAt).format("HH:mm") : "-" },
             { field: "lastLogout", headerName: "Λήξη", width: 90, renderCell: (p) => p.row.lastLogoutAt ? dayjs(p.row.lastLogoutAt).format("HH:mm") : "-" },
-            { field: "working", headerName: "Εργασία", width: 100, renderCell: (p) => msToHHMMSS(p.row?.workingMs) },
-            { field: "break", headerName: "Διάλειμμα", width: 100, renderCell: (p) => msToHHMMSS(p.row?.breakMs) },
-            { field: "total", headerName: "Σύνολο", width: 100, renderCell: (p) => msToHHMMSS((p.row?.workingMs || 0) + (p.row?.breakMs || 0)) },
+            
+            // ✅ ΠΡΟΣΘΗΚΗ VALUEGETTER ΓΙΑ ΣΩΣΤΟ SORTING
+            { 
+              field: "working", 
+              headerName: "Εργασία", 
+              width: 100, 
+              valueGetter: (params, row) => row?.workingMs || 0, // Επιστρέφει αριθμό (ms) για το sort
+              renderCell: (p) => msToHHMMSS(p.row?.workingMs)   // Εμφανίζει κείμενο (HH:MM:SS)
+            },
+            { 
+              field: "break", 
+              headerName: "Διάλειμμα", 
+              width: 100, 
+              valueGetter: (params, row) => row?.breakMs || 0,
+              renderCell: (p) => msToHHMMSS(p.row?.breakMs) 
+            },
+            { 
+              field: "total", 
+              headerName: "Σύνολο", 
+              width: 100, 
+              valueGetter: (params, row) => (row?.workingMs || 0) + (row?.breakMs || 0),
+              renderCell: (p) => msToHHMMSS((p.row?.workingMs || 0) + (p.row?.breakMs || 0)) 
+            },
+            
             { field: "status", headerName: "Status", width: 100 },
             { 
                 field: "actions", 
