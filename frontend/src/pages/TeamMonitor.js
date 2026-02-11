@@ -35,27 +35,23 @@ const msToHHMMSS = (ms) => {
 };
 
 // --- 🔥 NEW LIVE TIMER COMPONENT ---
-// Αυτό το μικρό component αναλαμβάνει να μετράει μόνο του το χρόνο
 const LiveTimer = ({ initialMs, isActive, startTime }) => {
   const [displayTime, setDisplayTime] = useState(msToHHMMSS(initialMs));
 
   useEffect(() => {
-    // Αν δεν είναι ενεργό (π.χ. δεν δουλεύει τώρα), δείξε απλά τον στατικό χρόνο
     if (!isActive || !startTime) {
       setDisplayTime(msToHHMMSS(initialMs));
       return;
     }
 
-    // Συνάρτηση υπολογισμού
     const update = () => {
       const now = dayjs();
       const start = dayjs(startTime);
-      const diff = now.diff(start); // Πόση ώρα πέρασε από το lastAction
+      const diff = now.diff(start); 
       const total = (initialMs || 0) + diff;
       setDisplayTime(msToHHMMSS(total));
     };
 
-    // Τρέξε μία φορά τώρα και μετά κάθε δευτερόλεπτο
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
@@ -85,7 +81,6 @@ const TeamMonitor = ({ darkMode, setDarkMode }) => {
 
   const fetchTeamData = useCallback(async () => {
     try {
-      // ✅ ΝΕΟ ROUTE που ζήτησες
       const res = await axios.get("/api/time/team-monitor");
       setLogs(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
@@ -95,7 +90,6 @@ const TeamMonitor = ({ darkMode, setDarkMode }) => {
     }
   }, []);
 
-  // Fetch Data κάθε 60 δευτερόλεπτα (για νέα logs/status)
   useEffect(() => {
     fetchTeamData();
     const fetchInterval = setInterval(fetchTeamData, 60000); 
@@ -126,6 +120,15 @@ const TeamMonitor = ({ darkMode, setDarkMode }) => {
       field: "workingMs", 
       headerName: "Εργασία", 
       flex: 1,
+      // ✅ SORTING FIX: Επιστρέφουμε την καθαρή τιμή για sort
+      valueGetter: (params, row) => {
+          const baseMs = row?.storedWorkMs || row?.workingMs || 0;
+          // Αν είναι active, προσθέτουμε τον χρόνο που πέρασε για πιο ακριβές sort (προαιρετικό)
+          if (row?.status === 'WORKING' && row?.lastAction) {
+              return baseMs + dayjs().diff(dayjs(row.lastAction));
+          }
+          return baseMs;
+      },
       renderCell: (params) => (
         <LiveTimer 
           initialMs={params.row?.storedWorkMs || params.row?.workingMs || 0}
@@ -138,6 +141,14 @@ const TeamMonitor = ({ darkMode, setDarkMode }) => {
       field: "breakMs", 
       headerName: "Διάλειμμα", 
       flex: 1,
+      // ✅ SORTING FIX
+      valueGetter: (params, row) => {
+          const baseMs = row?.storedBreakMs || row?.breakMs || 0;
+          if (row?.status === 'BREAK' && row?.lastAction) {
+              return baseMs + dayjs().diff(dayjs(row.lastAction));
+          }
+          return baseMs;
+      },
       renderCell: (params) => (
         <LiveTimer 
           initialMs={params.row?.storedBreakMs || params.row?.breakMs || 0}
@@ -150,18 +161,21 @@ const TeamMonitor = ({ darkMode, setDarkMode }) => {
       field: "total", 
       headerName: "Σύνολο", 
       flex: 1,
+      // ✅ SORTING FIX
+      valueGetter: (params, row) => {
+          const workStatic = row?.storedWorkMs || row?.workingMs || 0;
+          const breakStatic = row?.storedBreakMs || row?.breakMs || 0;
+          let total = workStatic + breakStatic;
+
+          if ((row?.status === 'WORKING' || row?.status === 'BREAK') && row?.lastAction) {
+             total += dayjs().diff(dayjs(row.lastAction));
+          }
+          return total;
+      },
       renderCell: (params) => {
-        // Υπολογίζουμε το σύνολο δυναμικά συνδυάζοντας τα δύο timers
-        // Σημείωση: Για απλότητα εδώ αθροίζουμε τα statics + όποιο είναι live
         const workStatic = params.row?.storedWorkMs || params.row?.workingMs || 0;
         const breakStatic = params.row?.storedBreakMs || params.row?.breakMs || 0;
         
-        // Αν κάποιο είναι active, θα πάρει το χρόνο από το lastAction
-        let activeDiff = 0;
-        if ((params.row?.status === 'WORKING' || params.row?.status === 'BREAK') && params.row?.lastAction) {
-           activeDiff = dayjs().diff(dayjs(params.row.lastAction));
-        }
-
         return (
           <LiveTimer 
              initialMs={workStatic + breakStatic}

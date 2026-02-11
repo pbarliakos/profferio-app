@@ -117,7 +117,7 @@ function App() {
               <Route path="/admin" element={<AdminDashboard darkMode={darkMode} setDarkMode={setDarkMode} />} />
               <Route path="/admin/timelogs" element={<AdminTimeLogs darkMode={darkMode} setDarkMode={setDarkMode} />} />
               <Route path="/admin/loginlogs" element={<LoginLogs darkMode={darkMode} />} />
-              <Route path="/admin/AgentMonitor" element={<AgentMonitor darkMode={darkMode} />} />
+              <Route path="/admin/AgentMonitor" element={<AgentMonitor darkMode={darkMode} setDarkMode={setDarkMode} />} />
             </Route>
 
             {/* 🛡️ User Dashboard */}
