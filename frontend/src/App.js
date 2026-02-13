@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { createTheme, ThemeProvider, CssBaseline } from "@mui/material";
+import { createTheme, ThemeProvider, CssBaseline, Snackbar, Alert } from "@mui/material";
 import axios from "axios";
+import io from "socket.io-client";
 
 // Σελίδες
 import Login from "./pages/Login";
@@ -13,6 +14,9 @@ import TeamAgentLogs from "./pages/TeamAgentLogs";
 import MyTimeNew from "./pages/MyTimeNew";
 import UserDashboard from "./pages/UserDashboard";
 import SalesTools from "./pages/SalesTools";
+import TicketsDashboard from "./pages/TicketsDashboard";
+import CreateTicket from "./pages/CreateTicket";
+import TicketDetails from "./pages/TicketDetails";
 
 // Admin Σελίδες
 import AdminTimeLogs from "./pages/admin/AdminTimeLogs";
@@ -20,32 +24,30 @@ import LoginLogs from "./pages/admin/LoginLogs";
 import AgentMonitor from "./pages/admin/AgentMonitor";
 import TeamMonitor from "./pages/TeamMonitor";
 
-// Components
 import ProtectedRoute from "./components/ProtectedRoute";
 import GlobalTimer from "./components/GlobalTimer";
 
+// SOCKET CONFIG
+const ENDPOINT = process.env.REACT_APP_API_URL || "http://localhost:5000";
+let socket;
+
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
-// ✅ Axios Interceptor: Βάζει token ΚΑΙ διαχειρίζεται το Force Logout
 axios.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// ✅ Response Interceptor: Αν λάβουμε 401 (Force Logout), καθαρίζουμε τα πάντα
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Αν δεν είμαστε ήδη στο login page, κάνουμε redirect
       if (window.location.pathname !== "/") {
-        console.warn("Session expired or force logout. Redirecting...");
+        console.warn("Session expired. Redirecting...");
         localStorage.clear();
         window.location.href = "/";
       }
@@ -60,11 +62,57 @@ function App() {
     return savedTheme ? savedTheme === "dark" : true; 
   });
 
+  const [notification, setNotification] = useState({ open: false, message: "", severity: "info" });
+
   useEffect(() => {
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  // Beacon Logout (Tab close)
+  // ✅ SOCKET.IO LOGIC
+  useEffect(() => {
+    const rawUser = localStorage.getItem("user");
+    if (rawUser) {
+        const user = JSON.parse(rawUser);
+        
+        socket = io(ENDPOINT);
+        socket.emit("setup", user);
+
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+
+        socket.on("ticket_notification", (data) => {
+            // ✅ CHECK: Αν εγώ έκανα την ενέργεια, μην μου δείξεις ειδοποίηση!
+            if (data.senderId === user._id) return;
+
+            // A. Windows Notification
+            if (Notification.permission === "granted") {
+                new Notification(data.title, {
+                    body: data.message,
+                    icon: "/Profferio.png",
+                    requireInteraction: true,
+                    tag: data.ticketId
+                });
+            }
+
+            // B. In-App Notification
+            setNotification({
+                open: true,
+                message: data.message,
+                severity: data.type || "info"
+            });
+
+            const audio = new Audio('/notification.mp3');
+            audio.play().catch(() => {});
+        });
+    }
+
+    return () => {
+        if (socket) socket.disconnect();
+    };
+  }, []);
+
+  // Beacon Logout
   useEffect(() => {
     const rawUser = localStorage.getItem("user");
     if (!rawUser) return;
@@ -89,7 +137,6 @@ function App() {
     if (!user?._id) return;
 
     const interval = setInterval(() => {
-      // Το heartbeat θα φάει 401 αν γίνει force logout και ο interceptor θα κάνει redirect
       axios.post("/api/auth/heartbeat", { userId: user._id }).catch(() => {}); 
     }, 15 * 1000);
 
@@ -97,10 +144,7 @@ function App() {
   }, []);
 
   const theme = useMemo(
-    () =>
-      createTheme({
-        palette: { mode: darkMode ? "dark" : "light" },
-      }),
+    () => createTheme({ palette: { mode: darkMode ? "dark" : "light" } }),
     [darkMode]
   );
 
@@ -112,7 +156,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Login darkMode={darkMode} setDarkMode={setDarkMode} />} />
 
-            {/* 🛡️ Admin Protected Routes */}
             <Route element={<ProtectedRoute allowedRole="admin" />}>
               <Route path="/admin" element={<AdminDashboard darkMode={darkMode} setDarkMode={setDarkMode} />} />
               <Route path="/admin/timelogs" element={<AdminTimeLogs darkMode={darkMode} setDarkMode={setDarkMode} />} />
@@ -120,17 +163,18 @@ function App() {
               <Route path="/admin/AgentMonitor" element={<AgentMonitor darkMode={darkMode} setDarkMode={setDarkMode} />} />
             </Route>
 
-            {/* 🛡️ User Dashboard */}
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<UserDashboard darkMode={darkMode} setDarkMode={setDarkMode} />} />
             </Route>
 
-            {/* 🛡️ Tools */}
             <Route element={<ProtectedRoute />}>
               <Route path="/my-time" element={<MyTimeNew darkMode={darkMode} setDarkMode={setDarkMode} />} />
               <Route path="/team-monitor" element={<TeamMonitor darkMode={darkMode} setDarkMode={setDarkMode} />} />
               <Route path="/nova/sales-tools" element={<SalesTools darkMode={darkMode} setDarkMode={setDarkMode} />} />
               <Route path="/team-logs" element={<TeamAgentLogs darkMode={darkMode} setDarkMode={setDarkMode} />} />
+              <Route path="/tickets" element={<TicketsDashboard darkMode={darkMode} setDarkMode={setDarkMode} />} />
+              <Route path="/tickets/new" element={<CreateTicket darkMode={darkMode} setDarkMode={setDarkMode} />} />
+              <Route path="/tickets/:id" element={<TicketDetails darkMode={darkMode} setDarkMode={setDarkMode} />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedProject="alterlife" />}>
@@ -145,6 +189,23 @@ function App() {
               <Route path="/other" element={<Other />} />
             </Route>
           </Routes>
+
+          <Snackbar 
+            open={notification.open} 
+            autoHideDuration={10000} 
+            onClose={() => setNotification({ ...notification, open: false })}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }} 
+          >
+            <Alert 
+                onClose={() => setNotification({ ...notification, open: false })} 
+                severity={notification.severity} 
+                variant="filled" 
+                sx={{ width: '100%', fontSize: '1rem' }}
+            >
+                {notification.message}
+            </Alert>
+          </Snackbar>
+
       </Router>
     </ThemeProvider>
   );

@@ -33,7 +33,8 @@ import axios from "axios";
 
 // ✅ 1. ΑΛΛΑΓΗ ΕΔΩ: Προσθέσαμε το property 'external'
 const projectButtons = [
-  { label: "Time Tracker", path: "/My-Time", external: false }, 
+  { label: "Time Tracker", path: "/My-Time", external: false },
+   { label: "Helpdesk", path: "/Tickets", external: false },
   { label: "Nova FTTH email", path: "/nova", external: false },
   { label: "Agent Monitor", path: "/admin/AgentMonitor", external: false },
   { label: "Login Logs", path: "/admin/loginlogs", external: false },
